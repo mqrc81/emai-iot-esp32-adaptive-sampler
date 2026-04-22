@@ -220,6 +220,19 @@ test_fft_contamination/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/build
 .PHONY : test_fft_contamination/fast
 
+#=============================================================================
+# Target rules for targets named test_window_tradeoff
+
+# Build rule for target.
+test_window_tradeoff: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_window_tradeoff
+.PHONY : test_window_tradeoff
+
+# fast build rule for target.
+test_window_tradeoff/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/build
+.PHONY : test_window_tradeoff/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
@@ -260,6 +273,7 @@ src/filter.o: src/filter.cpp.o
 src/filter.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/filter.cpp.o
 .PHONY : src/filter.cpp.o
 
 src/filter.i: src/filter.cpp.i
@@ -269,6 +283,7 @@ src/filter.i: src/filter.cpp.i
 src/filter.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/filter.cpp.i
 .PHONY : src/filter.cpp.i
 
 src/filter.s: src/filter.cpp.s
@@ -278,6 +293,7 @@ src/filter.s: src/filter.cpp.s
 src/filter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/filter.cpp.s
 .PHONY : src/filter.cpp.s
 
 src/mqtt_client.o: src/mqtt_client.cpp.o
@@ -343,6 +359,7 @@ src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -357,6 +374,7 @@ src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -371,6 +389,7 @@ src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -541,6 +560,30 @@ tests/test_signal_noisy.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/tests/test_signal_noisy.cpp.s
 .PHONY : tests/test_signal_noisy.cpp.s
 
+tests/test_window_tradeoff.o: tests/test_window_tradeoff.cpp.o
+.PHONY : tests/test_window_tradeoff.o
+
+# target to build an object file
+tests/test_window_tradeoff.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/tests/test_window_tradeoff.cpp.o
+.PHONY : tests/test_window_tradeoff.cpp.o
+
+tests/test_window_tradeoff.i: tests/test_window_tradeoff.cpp.i
+.PHONY : tests/test_window_tradeoff.i
+
+# target to preprocess a source file
+tests/test_window_tradeoff.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/tests/test_window_tradeoff.cpp.i
+.PHONY : tests/test_window_tradeoff.cpp.i
+
+tests/test_window_tradeoff.s: tests/test_window_tradeoff.cpp.s
+.PHONY : tests/test_window_tradeoff.s
+
+# target to generate assembly for a file
+tests/test_window_tradeoff.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/tests/test_window_tradeoff.cpp.s
+.PHONY : tests/test_window_tradeoff.cpp.s
+
 third_party/kissfft/kiss_fft.o: third_party/kissfft/kiss_fft.c.o
 .PHONY : third_party/kissfft/kiss_fft.o
 
@@ -605,6 +648,7 @@ help:
 	@echo "... test_sampler"
 	@echo "... test_signal"
 	@echo "... test_signal_noisy"
+	@echo "... test_window_tradeoff"
 	@echo "... src/fft.o"
 	@echo "... src/fft.i"
 	@echo "... src/fft.s"
@@ -641,6 +685,9 @@ help:
 	@echo "... tests/test_signal_noisy.o"
 	@echo "... tests/test_signal_noisy.i"
 	@echo "... tests/test_signal_noisy.s"
+	@echo "... tests/test_window_tradeoff.o"
+	@echo "... tests/test_window_tradeoff.i"
+	@echo "... tests/test_window_tradeoff.s"
 	@echo "... third_party/kissfft/kiss_fft.o"
 	@echo "... third_party/kissfft/kiss_fft.i"
 	@echo "... third_party/kissfft/kiss_fft.s"

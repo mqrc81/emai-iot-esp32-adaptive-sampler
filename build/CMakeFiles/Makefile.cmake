@@ -64,4 +64,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/test_signal_noisy.dir/DependInfo.cmake"
   "CMakeFiles/test_filter.dir/DependInfo.cmake"
   "CMakeFiles/test_fft_contamination.dir/DependInfo.cmake"
+  "CMakeFiles/test_window_tradeoff.dir/DependInfo.cmake"
   )

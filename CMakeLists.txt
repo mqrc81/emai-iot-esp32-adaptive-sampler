@@ -77,3 +77,12 @@ add_executable(test_fft_contamination
 )
 target_link_libraries(test_fft_contamination m kissfft)
 target_include_directories(test_fft_contamination PRIVATE src)
+
+# Test window tradeoff
+add_executable(test_window_tradeoff
+        src/signal.cpp
+        src/filter.cpp
+        tests/test_window_tradeoff.cpp
+)
+target_link_libraries(test_window_tradeoff m)
+target_include_directories(test_window_tradeoff PRIVATE src)
