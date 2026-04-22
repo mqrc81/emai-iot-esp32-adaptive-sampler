@@ -1,5 +1,6 @@
 #pragma once
 #include "sampler.h"
+#include <mosquitto.h>
 
 struct MQTTConfig
 {
@@ -9,4 +10,12 @@ struct MQTTConfig
     const char* clientId;
 };
 
-void mqttPublishWindow(const MQTTConfig& config, const WindowResult& window, float sampleRateHz);
+struct MQTTClient
+{
+    struct mosquitto* mosq;
+    MQTTConfig config;
+};
+
+MQTTClient mqttConnect(const MQTTConfig& config);
+void mqttPublishWindow(MQTTClient& client, const WindowResult& window, float sampleRateHz);
+void mqttDisconnect(MQTTClient& client);
