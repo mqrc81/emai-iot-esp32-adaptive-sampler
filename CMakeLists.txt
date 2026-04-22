@@ -58,3 +58,12 @@ add_executable(test_signal_noisy
 )
 target_link_libraries(test_signal_noisy m)
 target_include_directories(test_signal_noisy PRIVATE src)
+
+#Filter test
+add_executable(test_filter
+        src/signal.cpp
+        src/filter.cpp
+        tests/test_filter.cpp
+)
+target_link_libraries(test_filter m)
+target_include_directories(test_filter PRIVATE src)
