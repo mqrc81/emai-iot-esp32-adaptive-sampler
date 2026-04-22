@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "signal.h"
@@ -5,13 +6,20 @@
 
 #define SAMPLE_RATE_HZ  1000.0f
 #define NUM_SAMPLES     1000
-#define WINDOW_SIZE     21      // odd number, center sample at index 10
-#define ZSCORE_THRESH   3.0f    // standard choice from literature
-#define HAMPEL_THRESH   3.0f    // standard choice from literature
+#define WINDOW_SIZE     21
+#define ZSCORE_THRESH   3.0f
+#define HAMPEL_THRESH   3.0f
 
-int main()
+struct FilterStats
 {
-    srand(42);
+    int TP, FP, FN, TN;
+    float TPR, FPR;
+    float meanError; // mean |cleaned - clean| across window
+};
+
+FilterStats evaluateFilters(float anomalyProb, int useZscore)
+{
+    srand(42); // fixed seed for reproducibility
 
     SignalConfig config;
     config.a1 = 2.0f;
@@ -19,63 +27,79 @@ int main()
     config.a2 = 4.0f;
     config.f2 = 5.0f;
     config.noiseStdDev = 0.2f;
-    config.anomalyProb = 0.02f;
+    config.anomalyProb = anomalyProb;
     config.anomalyMin = 5.0f;
     config.anomalyMax = 15.0f;
 
-    // Generate full signal + ground truth
     float* samples = (float*)malloc(NUM_SAMPLES * sizeof(float));
-    int* gtAnomaly = (int*)malloc(NUM_SAMPLES * sizeof(int));
+    float* clean = (float*)malloc(NUM_SAMPLES * sizeof(float));
+    int* gt = (int*)malloc(NUM_SAMPLES * sizeof(int));
 
     for (int i = 0; i < NUM_SAMPLES; i++)
     {
         float t = i / SAMPLE_RATE_HZ;
-        samples[i] = generateNoisySignal(t, config, &gtAnomaly[i]);
+        clean[i] = generateSignal(t);
+        samples[i] = generateNoisySignal(t, config, &gt[i]);
     }
 
-    // Per-filter counters
     int half = WINDOW_SIZE / 2;
-    int zTP = 0, zFP = 0, zFN = 0, zTN = 0;
-    int hTP = 0, hFP = 0, hFN = 0, hTN = 0;
-
-    printf("i,sample,gt,z_flagged,h_flagged\n");
+    FilterStats stats = {0};
+    float totalError = 0.0f;
+    int errorCount = 0;
 
     for (int i = half; i < NUM_SAMPLES - half; i++)
     {
         const float* window = &samples[i - half];
 
-        FilterResult zr = zscoreFilter(window, WINDOW_SIZE, half, ZSCORE_THRESH);
-        FilterResult hr = hampelFilter(window, WINDOW_SIZE, half, HAMPEL_THRESH);
+        FilterResult r = useZscore
+                             ? zscoreFilter(window, WINDOW_SIZE, half, ZSCORE_THRESH)
+                             : hampelFilter(window, WINDOW_SIZE, half, HAMPEL_THRESH);
 
-        int gt = gtAnomaly[i];
+        int g = gt[i];
+        if (g == 1 && r.flagged == 1) stats.TP++;
+        if (g == 0 && r.flagged == 1) stats.FP++;
+        if (g == 1 && r.flagged == 0) stats.FN++;
+        if (g == 0 && r.flagged == 0) stats.TN++;
 
-        // Z-score confusion matrix
-        if (gt == 1 && zr.flagged == 1) zTP++;
-        if (gt == 0 && zr.flagged == 1) zFP++;
-        if (gt == 1 && zr.flagged == 0) zFN++;
-        if (gt == 0 && zr.flagged == 0) zTN++;
-
-        // Hampel confusion matrix
-        if (gt == 1 && hr.flagged == 1) hTP++;
-        if (gt == 0 && hr.flagged == 1) hFP++;
-        if (gt == 1 && hr.flagged == 0) hFN++;
-        if (gt == 0 && hr.flagged == 0) hTN++;
-
-        printf("%d,%.4f,%d,%d,%d\n", i, samples[i], gt, zr.flagged, hr.flagged);
+        // Mean error: how close is cleaned value to true clean signal
+        totalError += fabsf(r.cleaned - clean[i]);
+        errorCount++;
     }
 
-    // TPR = TP / (TP + FN),  FPR = FP / (FP + TN)
-    printf("\n=== Z-score Filter (k=%.1f, W=%d) ===\n", ZSCORE_THRESH, WINDOW_SIZE);
-    printf("TP=%d FP=%d FN=%d TN=%d\n", zTP, zFP, zFN, zTN);
-    printf("TPR: %.3f\n", (float)zTP / (zTP + zFN + 1e-6f));
-    printf("FPR: %.3f\n", (float)zFP / (zFP + zTN + 1e-6f));
-
-    printf("\n=== Hampel Filter (k=%.1f, W=%d) ===\n", HAMPEL_THRESH, WINDOW_SIZE);
-    printf("TP=%d FP=%d FN=%d TN=%d\n", hTP, hFP, hFN, hTN);
-    printf("TPR: %.3f\n", (float)hTP / (hTP + hFN + 1e-6f));
-    printf("FPR: %.3f\n", (float)hFP / (hFP + hTN + 1e-6f));
+    stats.TPR = (float)stats.TP / (stats.TP + stats.FN + 1e-6f);
+    stats.FPR = (float)stats.FP / (stats.FP + stats.TN + 1e-6f);
+    stats.meanError = totalError / errorCount;
 
     free(samples);
-    free(gtAnomaly);
+    free(clean);
+    free(gt);
+    return stats;
+}
+
+int main()
+{
+    float probs[] = {0.01f, 0.05f, 0.10f};
+    int nProbs = 3;
+
+    printf("=== Z-score Filter (k=%.1f, W=%d) ===\n", ZSCORE_THRESH, WINDOW_SIZE);
+    printf("%-8s %-6s %-6s %-6s %-6s %-6s %-6s %-12s\n",
+           "p", "TP", "FP", "FN", "TN", "TPR", "FPR", "MeanErr");
+    for (int i = 0; i < nProbs; i++)
+    {
+        FilterStats s = evaluateFilters(probs[i], 1);
+        printf("%-8.2f %-6d %-6d %-6d %-6d %-6.3f %-6.3f %-12.6f\n",
+               probs[i], s.TP, s.FP, s.FN, s.TN, s.TPR, s.FPR, s.meanError);
+    }
+
+    printf("\n=== Hampel Filter (k=%.1f, W=%d) ===\n", HAMPEL_THRESH, WINDOW_SIZE);
+    printf("%-8s %-6s %-6s %-6s %-6s %-6s %-6s %-12s\n",
+           "p", "TP", "FP", "FN", "TN", "TPR", "FPR", "MeanErr");
+    for (int i = 0; i < nProbs; i++)
+    {
+        FilterStats s = evaluateFilters(probs[i], 0);
+        printf("%-8.2f %-6d %-6d %-6d %-6d %-6.3f %-6.3f %-12.6f\n",
+               probs[i], s.TP, s.FP, s.FN, s.TN, s.TPR, s.FPR, s.meanError);
+    }
+
     return 0;
 }
