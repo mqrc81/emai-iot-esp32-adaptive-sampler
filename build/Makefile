@@ -168,6 +168,19 @@ test_sampler/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/build
 .PHONY : test_sampler/fast
 
+#=============================================================================
+# Target rules for targets named test_mqtt
+
+# Build rule for target.
+test_mqtt: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_mqtt
+.PHONY : test_mqtt
+
+# fast build rule for target.
+test_mqtt/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/build
+.PHONY : test_mqtt/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
@@ -175,6 +188,7 @@ src/fft.o: src/fft.cpp.o
 src/fft.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.o
 .PHONY : src/fft.cpp.o
 
 src/fft.i: src/fft.cpp.i
@@ -184,6 +198,7 @@ src/fft.i: src/fft.cpp.i
 src/fft.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.i
 .PHONY : src/fft.cpp.i
 
 src/fft.s: src/fft.cpp.s
@@ -193,7 +208,32 @@ src/fft.s: src/fft.cpp.s
 src/fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.s
 .PHONY : src/fft.cpp.s
+
+src/mqtt_client.o: src/mqtt_client.cpp.o
+.PHONY : src/mqtt_client.o
+
+# target to build an object file
+src/mqtt_client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/mqtt_client.cpp.o
+.PHONY : src/mqtt_client.cpp.o
+
+src/mqtt_client.i: src/mqtt_client.cpp.i
+.PHONY : src/mqtt_client.i
+
+# target to preprocess a source file
+src/mqtt_client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/mqtt_client.cpp.i
+.PHONY : src/mqtt_client.cpp.i
+
+src/mqtt_client.s: src/mqtt_client.cpp.s
+.PHONY : src/mqtt_client.s
+
+# target to generate assembly for a file
+src/mqtt_client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/mqtt_client.cpp.s
+.PHONY : src/mqtt_client.cpp.s
 
 src/sampler.o: src/sampler.cpp.o
 .PHONY : src/sampler.o
@@ -201,6 +241,7 @@ src/sampler.o: src/sampler.cpp.o
 # target to build an object file
 src/sampler.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.o
 .PHONY : src/sampler.cpp.o
 
 src/sampler.i: src/sampler.cpp.i
@@ -209,6 +250,7 @@ src/sampler.i: src/sampler.cpp.i
 # target to preprocess a source file
 src/sampler.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.i
 .PHONY : src/sampler.cpp.i
 
 src/sampler.s: src/sampler.cpp.s
@@ -217,6 +259,7 @@ src/sampler.s: src/sampler.cpp.s
 # target to generate assembly for a file
 src/sampler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.s
 .PHONY : src/sampler.cpp.s
 
 src/signal.o: src/signal.cpp.o
@@ -227,6 +270,7 @@ src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -237,6 +281,7 @@ src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -247,6 +292,7 @@ src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -272,6 +318,30 @@ tests/test_fft.s: tests/test_fft.cpp.s
 tests/test_fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.s
 .PHONY : tests/test_fft.cpp.s
+
+tests/test_mqtt.o: tests/test_mqtt.cpp.o
+.PHONY : tests/test_mqtt.o
+
+# target to build an object file
+tests/test_mqtt.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/tests/test_mqtt.cpp.o
+.PHONY : tests/test_mqtt.cpp.o
+
+tests/test_mqtt.i: tests/test_mqtt.cpp.i
+.PHONY : tests/test_mqtt.i
+
+# target to preprocess a source file
+tests/test_mqtt.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/tests/test_mqtt.cpp.i
+.PHONY : tests/test_mqtt.cpp.i
+
+tests/test_mqtt.s: tests/test_mqtt.cpp.s
+.PHONY : tests/test_mqtt.s
+
+# target to generate assembly for a file
+tests/test_mqtt.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/tests/test_mqtt.cpp.s
+.PHONY : tests/test_mqtt.cpp.s
 
 tests/test_sampler.o: tests/test_sampler.cpp.o
 .PHONY : tests/test_sampler.o
@@ -379,11 +449,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... kissfft"
 	@echo "... test_fft"
+	@echo "... test_mqtt"
 	@echo "... test_sampler"
 	@echo "... test_signal"
 	@echo "... src/fft.o"
 	@echo "... src/fft.i"
 	@echo "... src/fft.s"
+	@echo "... src/mqtt_client.o"
+	@echo "... src/mqtt_client.i"
+	@echo "... src/mqtt_client.s"
 	@echo "... src/sampler.o"
 	@echo "... src/sampler.i"
 	@echo "... src/sampler.s"
@@ -393,6 +467,9 @@ help:
 	@echo "... tests/test_fft.o"
 	@echo "... tests/test_fft.i"
 	@echo "... tests/test_fft.s"
+	@echo "... tests/test_mqtt.o"
+	@echo "... tests/test_mqtt.i"
+	@echo "... tests/test_mqtt.s"
 	@echo "... tests/test_sampler.o"
 	@echo "... tests/test_sampler.i"
 	@echo "... tests/test_sampler.s"

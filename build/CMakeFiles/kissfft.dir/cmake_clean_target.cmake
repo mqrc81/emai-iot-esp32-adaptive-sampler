@@ -1,3 +1,3 @@
 file(REMOVE_RECURSE
-        "libkissfft.a"
+  "libkissfft.a"
 )

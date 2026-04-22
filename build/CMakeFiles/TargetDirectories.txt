@@ -2,5 +2,6 @@
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_signal.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_fft.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_sampler.dir
+/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_mqtt.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/edit_cache.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/rebuild_cache.dir

@@ -38,3 +38,15 @@ add_executable(test_sampler
 )
 target_link_libraries(test_sampler m kissfft)
 target_include_directories(test_sampler PRIVATE src)
+
+# MQTT test
+add_executable(test_mqtt
+        src/signal.cpp
+        src/fft.cpp
+        src/sampler.cpp
+        src/mqtt_client.cpp
+        tests/test_mqtt.cpp
+)
+target_link_libraries(test_mqtt m kissfft mosquitto)
+target_include_directories(test_mqtt PRIVATE src /usr/local/include)
+target_link_directories(test_mqtt PRIVATE /usr/local/lib)
