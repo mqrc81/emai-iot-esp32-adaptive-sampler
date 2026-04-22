@@ -86,3 +86,13 @@ add_executable(test_window_tradeoff
 )
 target_link_libraries(test_window_tradeoff m)
 target_include_directories(test_window_tradeoff PRIVATE src)
+
+# Test signals comparison
+add_executable(test_signals_comparison
+        src/signal.cpp
+        src/fft.cpp
+        src/sampler.cpp
+        tests/test_signals_comparison.cpp
+)
+target_link_libraries(test_signals_comparison m kissfft)
+target_include_directories(test_signals_comparison PRIVATE src)

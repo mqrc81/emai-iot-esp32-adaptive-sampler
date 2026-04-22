@@ -7,5 +7,6 @@
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_filter.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_fft_contamination.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_window_tradeoff.dir
+/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_signals_comparison.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/edit_cache.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/rebuild_cache.dir

@@ -46,3 +46,11 @@ float generateNoisySignal(float t, const SignalConfig& config, int* anomalyOut)
 
     return s;
 }
+
+float generateSignalFromDef(float t, const SignalDef& def)
+{
+    float s = 0.0f;
+    for (int i = 0; i < def.numComponents; i++)
+        s += def.components[i][0] * sinf(TWO_PI_F * def.components[i][1] * t);
+    return s;
+}

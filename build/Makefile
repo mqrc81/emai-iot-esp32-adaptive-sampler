@@ -233,6 +233,19 @@ test_window_tradeoff/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/build
 .PHONY : test_window_tradeoff/fast
 
+#=============================================================================
+# Target rules for targets named test_signals_comparison
+
+# Build rule for target.
+test_signals_comparison: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_signals_comparison
+.PHONY : test_signals_comparison
+
+# fast build rule for target.
+test_signals_comparison/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/build
+.PHONY : test_signals_comparison/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
@@ -242,6 +255,7 @@ src/fft.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.o
 .PHONY : src/fft.cpp.o
 
 src/fft.i: src/fft.cpp.i
@@ -253,6 +267,7 @@ src/fft.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.i
 .PHONY : src/fft.cpp.i
 
 src/fft.s: src/fft.cpp.s
@@ -264,6 +279,7 @@ src/fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.s
 .PHONY : src/fft.cpp.s
 
 src/filter.o: src/filter.cpp.o
@@ -327,6 +343,7 @@ src/sampler.o: src/sampler.cpp.o
 src/sampler.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.o
 .PHONY : src/sampler.cpp.o
 
 src/sampler.i: src/sampler.cpp.i
@@ -336,6 +353,7 @@ src/sampler.i: src/sampler.cpp.i
 src/sampler.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.i
 .PHONY : src/sampler.cpp.i
 
 src/sampler.s: src/sampler.cpp.s
@@ -345,6 +363,7 @@ src/sampler.s: src/sampler.cpp.s
 src/sampler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.s
 .PHONY : src/sampler.cpp.s
 
 src/signal.o: src/signal.cpp.o
@@ -360,6 +379,7 @@ src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -375,6 +395,7 @@ src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -390,6 +411,7 @@ src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -560,6 +582,30 @@ tests/test_signal_noisy.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/tests/test_signal_noisy.cpp.s
 .PHONY : tests/test_signal_noisy.cpp.s
 
+tests/test_signals_comparison.o: tests/test_signals_comparison.cpp.o
+.PHONY : tests/test_signals_comparison.o
+
+# target to build an object file
+tests/test_signals_comparison.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/tests/test_signals_comparison.cpp.o
+.PHONY : tests/test_signals_comparison.cpp.o
+
+tests/test_signals_comparison.i: tests/test_signals_comparison.cpp.i
+.PHONY : tests/test_signals_comparison.i
+
+# target to preprocess a source file
+tests/test_signals_comparison.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/tests/test_signals_comparison.cpp.i
+.PHONY : tests/test_signals_comparison.cpp.i
+
+tests/test_signals_comparison.s: tests/test_signals_comparison.cpp.s
+.PHONY : tests/test_signals_comparison.s
+
+# target to generate assembly for a file
+tests/test_signals_comparison.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/tests/test_signals_comparison.cpp.s
+.PHONY : tests/test_signals_comparison.cpp.s
+
 tests/test_window_tradeoff.o: tests/test_window_tradeoff.cpp.o
 .PHONY : tests/test_window_tradeoff.o
 
@@ -648,6 +694,7 @@ help:
 	@echo "... test_sampler"
 	@echo "... test_signal"
 	@echo "... test_signal_noisy"
+	@echo "... test_signals_comparison"
 	@echo "... test_window_tradeoff"
 	@echo "... src/fft.o"
 	@echo "... src/fft.i"
@@ -685,6 +732,9 @@ help:
 	@echo "... tests/test_signal_noisy.o"
 	@echo "... tests/test_signal_noisy.i"
 	@echo "... tests/test_signal_noisy.s"
+	@echo "... tests/test_signals_comparison.o"
+	@echo "... tests/test_signals_comparison.i"
+	@echo "... tests/test_signals_comparison.s"
 	@echo "... tests/test_window_tradeoff.o"
 	@echo "... tests/test_window_tradeoff.i"
 	@echo "... tests/test_window_tradeoff.s"

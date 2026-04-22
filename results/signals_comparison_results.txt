@@ -1,0 +1,4 @@
+Signal                                   DomFreq(Hz)  AdaptRate    Reduction    EnergySav%   Window(ms)  
+2sin(2pi*3t) + 4sin(2pi*5t)              4.883        9.766        102.4      x 99.0         0.0030      
+4sin(2pi*2t)                             1.953        3.906        256.0      x 99.6         0.0010      
+2sin(2pi*10t) + 3sin(2pi*45t)            44.922       89.844       11.1       x 91.0         0.0220      
