@@ -1,0 +1,12 @@
+p      Unfiltered   ZScore       Hampel       Rate_Unfilt  Rate_ZScore  Rate_Hampel  TrueRate    
+0.01   4.883        4.883        4.883        9.766        9.766        9.766        9.770       
+0.05   4.883        4.883        4.883        9.766        9.766        9.766        9.770       
+0.10   4.883        4.883        4.883        9.766        9.766        9.766        9.770       
+
+=== Top 5 bins for p=10% unfiltered ===
+Top 5 frequency bins:
+  bin 10: 4.883 Hz, magnitude 3477.59
+  bin 6: 2.930 Hz, magnitude 2031.37
+  bin 11: 5.371 Hz, magnitude 1219.73
+  bin 12: 5.859 Hz, magnitude 828.82
+  bin 9: 4.395 Hz, magnitude 718.61

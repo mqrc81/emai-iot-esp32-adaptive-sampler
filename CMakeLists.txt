@@ -59,7 +59,7 @@ add_executable(test_signal_noisy
 target_link_libraries(test_signal_noisy m)
 target_include_directories(test_signal_noisy PRIVATE src)
 
-#Filter test
+# Filter test
 add_executable(test_filter
         src/signal.cpp
         src/filter.cpp
@@ -67,3 +67,13 @@ add_executable(test_filter
 )
 target_link_libraries(test_filter m)
 target_include_directories(test_filter PRIVATE src)
+
+# FFT contamination test
+add_executable(test_fft_contamination
+        src/signal.cpp
+        src/fft.cpp
+        src/filter.cpp
+        tests/test_fft_contamination.cpp
+)
+target_link_libraries(test_fft_contamination m kissfft)
+target_include_directories(test_fft_contamination PRIVATE src)

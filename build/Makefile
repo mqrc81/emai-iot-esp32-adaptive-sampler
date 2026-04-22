@@ -207,6 +207,19 @@ test_filter/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/build
 .PHONY : test_filter/fast
 
+#=============================================================================
+# Target rules for targets named test_fft_contamination
+
+# Build rule for target.
+test_fft_contamination: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_fft_contamination
+.PHONY : test_fft_contamination
+
+# fast build rule for target.
+test_fft_contamination/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/build
+.PHONY : test_fft_contamination/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
@@ -215,6 +228,7 @@ src/fft.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.o
 .PHONY : src/fft.cpp.o
 
 src/fft.i: src/fft.cpp.i
@@ -225,6 +239,7 @@ src/fft.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.i
 .PHONY : src/fft.cpp.i
 
 src/fft.s: src/fft.cpp.s
@@ -235,6 +250,7 @@ src/fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.s
 .PHONY : src/fft.cpp.s
 
 src/filter.o: src/filter.cpp.o
@@ -243,6 +259,7 @@ src/filter.o: src/filter.cpp.o
 # target to build an object file
 src/filter.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.o
 .PHONY : src/filter.cpp.o
 
 src/filter.i: src/filter.cpp.i
@@ -251,6 +268,7 @@ src/filter.i: src/filter.cpp.i
 # target to preprocess a source file
 src/filter.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.i
 .PHONY : src/filter.cpp.i
 
 src/filter.s: src/filter.cpp.s
@@ -259,6 +277,7 @@ src/filter.s: src/filter.cpp.s
 # target to generate assembly for a file
 src/filter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/filter.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.s
 .PHONY : src/filter.cpp.s
 
 src/mqtt_client.o: src/mqtt_client.cpp.o
@@ -323,6 +342,7 @@ src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -336,6 +356,7 @@ src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -349,6 +370,7 @@ src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -374,6 +396,30 @@ tests/test_fft.s: tests/test_fft.cpp.s
 tests/test_fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.s
 .PHONY : tests/test_fft.cpp.s
+
+tests/test_fft_contamination.o: tests/test_fft_contamination.cpp.o
+.PHONY : tests/test_fft_contamination.o
+
+# target to build an object file
+tests/test_fft_contamination.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/tests/test_fft_contamination.cpp.o
+.PHONY : tests/test_fft_contamination.cpp.o
+
+tests/test_fft_contamination.i: tests/test_fft_contamination.cpp.i
+.PHONY : tests/test_fft_contamination.i
+
+# target to preprocess a source file
+tests/test_fft_contamination.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/tests/test_fft_contamination.cpp.i
+.PHONY : tests/test_fft_contamination.cpp.i
+
+tests/test_fft_contamination.s: tests/test_fft_contamination.cpp.s
+.PHONY : tests/test_fft_contamination.s
+
+# target to generate assembly for a file
+tests/test_fft_contamination.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/tests/test_fft_contamination.cpp.s
+.PHONY : tests/test_fft_contamination.cpp.s
 
 tests/test_filter.o: tests/test_filter.cpp.o
 .PHONY : tests/test_filter.o
@@ -553,6 +599,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... kissfft"
 	@echo "... test_fft"
+	@echo "... test_fft_contamination"
 	@echo "... test_filter"
 	@echo "... test_mqtt"
 	@echo "... test_sampler"
@@ -576,6 +623,9 @@ help:
 	@echo "... tests/test_fft.o"
 	@echo "... tests/test_fft.i"
 	@echo "... tests/test_fft.s"
+	@echo "... tests/test_fft_contamination.o"
+	@echo "... tests/test_fft_contamination.i"
+	@echo "... tests/test_fft_contamination.s"
 	@echo "... tests/test_filter.o"
 	@echo "... tests/test_filter.i"
 	@echo "... tests/test_filter.s"
