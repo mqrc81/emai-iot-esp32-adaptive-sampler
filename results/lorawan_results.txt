@@ -1,0 +1,14 @@
+[LoRaWAN STUB] Simulating TTN uplink:
+  DevEUI      : 0102030405060708
+  AppEUI      : 0807060504030201
+  Port        : 1
+  Data rate   : DR5
+  Payload     : 01 02 00 05 (4 bytes, Cayenne LPP)
+  Decoded avg : 0.051832
+
+[LoRaWAN STUB] Real deployment notes:
+  Duty cycle  : 1% max in EU868 band → max 36s TX per hour
+  At DR0 (SF12/BW125): ~250ms airtime per packet
+  At DR5 (SF7/BW125) : ~20ms airtime per packet
+  TTN fair use policy: max 30s uplink airtime per day
+  At 5s window interval: 17280 uplinks/day, ~345600 ms airtime/day

@@ -246,6 +246,19 @@ test_signals_comparison/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/build
 .PHONY : test_signals_comparison/fast
 
+#=============================================================================
+# Target rules for targets named test_lorawan
+
+# Build rule for target.
+test_lorawan: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_lorawan
+.PHONY : test_lorawan
+
+# fast build rule for target.
+test_lorawan/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/build
+.PHONY : test_lorawan/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
@@ -256,6 +269,7 @@ src/fft.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/fft.cpp.o
 .PHONY : src/fft.cpp.o
 
 src/fft.i: src/fft.cpp.i
@@ -268,6 +282,7 @@ src/fft.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/fft.cpp.i
 .PHONY : src/fft.cpp.i
 
 src/fft.s: src/fft.cpp.s
@@ -280,6 +295,7 @@ src/fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/fft.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/fft.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/fft.cpp.s
 .PHONY : src/fft.cpp.s
 
 src/filter.o: src/filter.cpp.o
@@ -311,6 +327,30 @@ src/filter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/filter.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/filter.cpp.s
 .PHONY : src/filter.cpp.s
+
+src/lorawan_client.o: src/lorawan_client.cpp.o
+.PHONY : src/lorawan_client.o
+
+# target to build an object file
+src/lorawan_client.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/lorawan_client.cpp.o
+.PHONY : src/lorawan_client.cpp.o
+
+src/lorawan_client.i: src/lorawan_client.cpp.i
+.PHONY : src/lorawan_client.i
+
+# target to preprocess a source file
+src/lorawan_client.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/lorawan_client.cpp.i
+.PHONY : src/lorawan_client.cpp.i
+
+src/lorawan_client.s: src/lorawan_client.cpp.s
+.PHONY : src/lorawan_client.s
+
+# target to generate assembly for a file
+src/lorawan_client.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/lorawan_client.cpp.s
+.PHONY : src/lorawan_client.cpp.s
 
 src/mqtt_client.o: src/mqtt_client.cpp.o
 .PHONY : src/mqtt_client.o
@@ -344,6 +384,7 @@ src/sampler.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/sampler.cpp.o
 .PHONY : src/sampler.cpp.o
 
 src/sampler.i: src/sampler.cpp.i
@@ -354,6 +395,7 @@ src/sampler.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/sampler.cpp.i
 .PHONY : src/sampler.cpp.i
 
 src/sampler.s: src/sampler.cpp.s
@@ -364,6 +406,7 @@ src/sampler.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/src/sampler.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/sampler.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/sampler.cpp.s
 .PHONY : src/sampler.cpp.s
 
 src/signal.o: src/signal.cpp.o
@@ -380,6 +423,7 @@ src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -396,6 +440,7 @@ src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -412,6 +457,7 @@ src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft_contamination.dir/build.make CMakeFiles/test_fft_contamination.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_window_tradeoff.dir/build.make CMakeFiles/test_window_tradeoff.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signals_comparison.dir/build.make CMakeFiles/test_signals_comparison.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -485,6 +531,30 @@ tests/test_filter.s: tests/test_filter.cpp.s
 tests/test_filter.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_filter.dir/build.make CMakeFiles/test_filter.dir/tests/test_filter.cpp.s
 .PHONY : tests/test_filter.cpp.s
+
+tests/test_lorawan.o: tests/test_lorawan.cpp.o
+.PHONY : tests/test_lorawan.o
+
+# target to build an object file
+tests/test_lorawan.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/tests/test_lorawan.cpp.o
+.PHONY : tests/test_lorawan.cpp.o
+
+tests/test_lorawan.i: tests/test_lorawan.cpp.i
+.PHONY : tests/test_lorawan.i
+
+# target to preprocess a source file
+tests/test_lorawan.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/tests/test_lorawan.cpp.i
+.PHONY : tests/test_lorawan.cpp.i
+
+tests/test_lorawan.s: tests/test_lorawan.cpp.s
+.PHONY : tests/test_lorawan.s
+
+# target to generate assembly for a file
+tests/test_lorawan.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_lorawan.dir/build.make CMakeFiles/test_lorawan.dir/tests/test_lorawan.cpp.s
+.PHONY : tests/test_lorawan.cpp.s
 
 tests/test_mqtt.o: tests/test_mqtt.cpp.o
 .PHONY : tests/test_mqtt.o
@@ -690,6 +760,7 @@ help:
 	@echo "... test_fft"
 	@echo "... test_fft_contamination"
 	@echo "... test_filter"
+	@echo "... test_lorawan"
 	@echo "... test_mqtt"
 	@echo "... test_sampler"
 	@echo "... test_signal"
@@ -702,6 +773,9 @@ help:
 	@echo "... src/filter.o"
 	@echo "... src/filter.i"
 	@echo "... src/filter.s"
+	@echo "... src/lorawan_client.o"
+	@echo "... src/lorawan_client.i"
+	@echo "... src/lorawan_client.s"
 	@echo "... src/mqtt_client.o"
 	@echo "... src/mqtt_client.i"
 	@echo "... src/mqtt_client.s"
@@ -720,6 +794,9 @@ help:
 	@echo "... tests/test_filter.o"
 	@echo "... tests/test_filter.i"
 	@echo "... tests/test_filter.s"
+	@echo "... tests/test_lorawan.o"
+	@echo "... tests/test_lorawan.i"
+	@echo "... tests/test_lorawan.s"
 	@echo "... tests/test_mqtt.o"
 	@echo "... tests/test_mqtt.i"
 	@echo "... tests/test_mqtt.s"

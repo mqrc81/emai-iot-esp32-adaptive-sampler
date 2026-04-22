@@ -96,3 +96,14 @@ add_executable(test_signals_comparison
 )
 target_link_libraries(test_signals_comparison m kissfft)
 target_include_directories(test_signals_comparison PRIVATE src)
+
+# Test LoRaWAN client
+add_executable(test_lorawan
+        src/signal.cpp
+        src/fft.cpp
+        src/sampler.cpp
+        src/lorawan_client.cpp
+        tests/test_lorawan.cpp
+)
+target_link_libraries(test_lorawan m kissfft)
+target_include_directories(test_lorawan PRIVATE src)
