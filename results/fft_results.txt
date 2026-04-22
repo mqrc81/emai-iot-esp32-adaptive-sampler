@@ -1,4 +1,4 @@
-Dominant frequency : 5.08 Hz
-Optimal sample rate: 10.16 Hz
-Original sample rate: 100.00 Hz
-Rate reduction factor: 9.8x
+Dominant frequency : 4.88 Hz
+Optimal sample rate: 9.77 Hz
+Original sample rate: 1000.00 Hz
+Rate reduction factor: 102.4x

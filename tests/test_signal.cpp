@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "signal.h"
 
-#define SAMPLE_RATE_HZ 100
+#define SAMPLE_RATE_HZ 1000
 
 int main()
 {

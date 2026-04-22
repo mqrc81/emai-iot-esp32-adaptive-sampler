@@ -6,7 +6,7 @@
 
 #define MAX_SAMPLE_RATE  1000.0f
 #define WINDOW_SECS      5.0f
-#define FFT_SIZE         512
+#define FFT_SIZE         2048
 
 int main()
 {

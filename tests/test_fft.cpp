@@ -2,8 +2,8 @@
 #include "signal.h"
 #include "fft.h"
 
-#define SAMPLE_RATE_HZ 100.0f
-#define FFT_SIZE 256  // must be power of 2
+#define SAMPLE_RATE_HZ 1000.0f
+#define FFT_SIZE 2048
 
 int main()
 {

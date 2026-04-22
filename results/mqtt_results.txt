@@ -1,32 +1,42 @@
 Connected to broker at localhost:1883
 
 === Configuration ===
-Max sample rate     : 100.00 Hz
-Adaptive rate       : 10.16 Hz
+Max sample rate     : 1000.00 Hz
+Adaptive rate       : 9.77 Hz
 Window duration     : 5.0 s
-Number of windows   : 5
+Number of windows   : 10
 
 === Per-Window Metrics ===
 Window   Avg          Samples      Compute(ms)  E2E(ms)     
-Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
-1        0.061244     50           0.004        0.048       
-Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.003}
-2        0.061244     50           0.003        0.020       
-Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
-3        0.061244     50           0.004        0.017       
-Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
-4        0.061244     50           0.004        0.016       
-Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
-5        0.061244     50           0.004        0.056       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.006}
+1        0.051832     48           0.006        0.061       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+2        0.051832     48           0.005        0.150       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+3        0.051832     48           0.005        0.036       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+4        0.051832     48           0.005        0.149       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+5        0.051832     48           0.005        0.034       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+6        0.051832     48           0.005        0.027       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.004}
+7        0.051832     48           0.004        0.253       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.006}
+8        0.051832     48           0.006        0.125       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+9        0.051832     48           0.005        0.049       
+Published: {"average":0.051832,"sample_rate":9.77,"sample_count":48,"window_ms":0.005}
+10       0.051832     48           0.005        0.026       
 Disconnected from broker
 
 === Summary ===
-Avg compute time    : 0.004 ms
-Avg E2E latency     : 0.031 ms
+Avg compute time    : 0.005 ms
+Avg E2E latency     : 0.091 ms
 
 === Efficiency Metrics ===
-Sample reduction    : 9.8x
-Energy saving       : 89.8%
-Data volume saving  : 89.8%
-Bytes/window (max)  : 2000
-Bytes/window (adap) : 200
+Sample reduction    : 102.4x
+Energy saving       : 99.0%
+Data volume saving  : 99.0%
+Bytes/window (max)  : 20000
+Bytes/window (adap) : 192

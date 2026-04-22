@@ -5,10 +5,10 @@
 #include "sampler.h"
 #include "mqtt_client.h"
 
-#define MAX_SAMPLE_RATE  100.0f
+#define MAX_SAMPLE_RATE  1000.0f
 #define WINDOW_SECS      5.0f
-#define FFT_SIZE         256
-#define NUM_WINDOWS      5      // run multiple windows for stable averages
+#define FFT_SIZE         2048
+#define NUM_WINDOWS      10      // run multiple windows for stable averages
 
 static float elapsedMs(struct timespec start)
 {
