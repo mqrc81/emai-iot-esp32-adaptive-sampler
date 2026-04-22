@@ -26,13 +26,16 @@ int main()
         fftBuffer[i] = generateSignal(i / MAX_SAMPLE_RATE);
     FFTResult fft = computeFFT(fftBuffer, FFT_SIZE, MAX_SAMPLE_RATE);
 
+    // Connect once before tests
     MQTTConfig config;
     config.host = "localhost";
     config.port = 1883;
     config.topic = "iot/window";
     config.clientId = "iot-sampler-001";
 
-    printf("=== Configuration ===\n");
+    MQTTClient client = mqttConnect(config);
+
+    printf("\n=== Configuration ===\n");
     printf("Max sample rate     : %.2f Hz\n", MAX_SAMPLE_RATE);
     printf("Adaptive rate       : %.2f Hz\n", fft.optimalSampleRate);
     printf("Window duration     : %.1f s\n", WINDOW_SECS);
@@ -52,7 +55,7 @@ int main()
         clock_gettime(CLOCK_MONOTONIC, &e2eStart);
 
         WindowResult window = computeWindow(fft.optimalSampleRate, WINDOW_SECS);
-        mqttPublishWindow(config, window, fft.optimalSampleRate);
+        mqttPublishWindow(client, window, fft.optimalSampleRate);
 
         float e2eMs = elapsedMs(e2eStart);
         totalE2E += e2eMs;
@@ -66,6 +69,9 @@ int main()
                e2eMs
         );
     }
+
+    // Disconnect after all windows
+    mqttDisconnect(client);
 
     printf("\n=== Summary ===\n");
     printf("Avg compute time    : %.3f ms\n", totalCompute / NUM_WINDOWS);
