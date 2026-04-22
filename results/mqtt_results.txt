@@ -1,0 +1,32 @@
+Connected to broker at localhost:1883
+
+=== Configuration ===
+Max sample rate     : 100.00 Hz
+Adaptive rate       : 10.16 Hz
+Window duration     : 5.0 s
+Number of windows   : 5
+
+=== Per-Window Metrics ===
+Window   Avg          Samples      Compute(ms)  E2E(ms)     
+Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
+1        0.061244     50           0.004        0.048       
+Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.003}
+2        0.061244     50           0.003        0.020       
+Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
+3        0.061244     50           0.004        0.017       
+Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
+4        0.061244     50           0.004        0.016       
+Published: {"average":0.061244,"sample_rate":10.16,"sample_count":50,"window_ms":0.004}
+5        0.061244     50           0.004        0.056       
+Disconnected from broker
+
+=== Summary ===
+Avg compute time    : 0.004 ms
+Avg E2E latency     : 0.031 ms
+
+=== Efficiency Metrics ===
+Sample reduction    : 9.8x
+Energy saving       : 89.8%
+Data volume saving  : 89.8%
+Bytes/window (max)  : 2000
+Bytes/window (adap) : 200

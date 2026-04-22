@@ -4,9 +4,9 @@
 #include "sampler.h"
 #include <math.h>
 
-#define MAX_SAMPLE_RATE  100.0f
+#define MAX_SAMPLE_RATE  1000.0f
 #define WINDOW_SECS      5.0f
-#define FFT_SIZE         256
+#define FFT_SIZE         512
 
 int main()
 {
