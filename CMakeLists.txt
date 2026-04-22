@@ -50,3 +50,11 @@ add_executable(test_mqtt
 target_link_libraries(test_mqtt m kissfft mosquitto)
 target_include_directories(test_mqtt PRIVATE src /usr/local/include)
 target_link_directories(test_mqtt PRIVATE /usr/local/lib)
+
+# Signal noisy test
+add_executable(test_signal_noisy
+        src/signal.cpp
+        tests/test_signal_noisy.cpp
+)
+target_link_libraries(test_signal_noisy m)
+target_include_directories(test_signal_noisy PRIVATE src)

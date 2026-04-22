@@ -68,6 +68,7 @@ all: CMakeFiles/test_signal.dir/all
 all: CMakeFiles/test_fft.dir/all
 all: CMakeFiles/test_sampler.dir/all
 all: CMakeFiles/test_mqtt.dir/all
+all: CMakeFiles/test_signal_noisy.dir/all
 .PHONY : all
 
 # The main recursive "codegen" target.
@@ -76,6 +77,7 @@ codegen: CMakeFiles/test_signal.dir/codegen
 codegen: CMakeFiles/test_fft.dir/codegen
 codegen: CMakeFiles/test_sampler.dir/codegen
 codegen: CMakeFiles/test_mqtt.dir/codegen
+codegen: CMakeFiles/test_signal_noisy.dir/codegen
 .PHONY : codegen
 
 # The main recursive "preinstall" target.
@@ -88,6 +90,7 @@ clean: CMakeFiles/test_signal.dir/clean
 clean: CMakeFiles/test_fft.dir/clean
 clean: CMakeFiles/test_sampler.dir/clean
 clean: CMakeFiles/test_mqtt.dir/clean
+clean: CMakeFiles/test_signal_noisy.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -249,6 +252,38 @@ CMakeFiles/test_mqtt.dir/codegen:
 CMakeFiles/test_mqtt.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_mqtt.dir/build.make CMakeFiles/test_mqtt.dir/clean
 .PHONY : CMakeFiles/test_mqtt.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/test_signal_noisy.dir
+
+# All Build rule for target.
+CMakeFiles/test_signal_noisy.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles --progress-num=22,23,24 "Built target test_signal_noisy"
+.PHONY : CMakeFiles/test_signal_noisy.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/test_signal_noisy.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles 3
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/test_signal_noisy.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles 0
+.PHONY : CMakeFiles/test_signal_noisy.dir/rule
+
+# Convenience name for target.
+test_signal_noisy: CMakeFiles/test_signal_noisy.dir/rule
+.PHONY : test_signal_noisy
+
+# codegen rule for target.
+CMakeFiles/test_signal_noisy.dir/codegen:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/codegen
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles --progress-num=22,23,24 "Finished codegen for target test_signal_noisy"
+.PHONY : CMakeFiles/test_signal_noisy.dir/codegen
+
+# clean rule for target.
+CMakeFiles/test_signal_noisy.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal_noisy.dir/build.make CMakeFiles/test_signal_noisy.dir/clean
+.PHONY : CMakeFiles/test_signal_noisy.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
