@@ -1,0 +1,10 @@
+# CLion
+.idea/
+cmake-build-*/
+.run/
+
+# PlatformIO
+.pio/
+
+# macOS
+.DS_Store
