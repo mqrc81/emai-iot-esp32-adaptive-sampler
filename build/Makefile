@@ -155,12 +155,26 @@ test_fft/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/build
 .PHONY : test_fft/fast
 
+#=============================================================================
+# Target rules for targets named test_sampler
+
+# Build rule for target.
+test_sampler: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_sampler
+.PHONY : test_sampler
+
+# fast build rule for target.
+test_sampler/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/build
+.PHONY : test_sampler/fast
+
 src/fft.o: src/fft.cpp.o
 .PHONY : src/fft.o
 
 # target to build an object file
 src/fft.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.o
 .PHONY : src/fft.cpp.o
 
 src/fft.i: src/fft.cpp.i
@@ -169,6 +183,7 @@ src/fft.i: src/fft.cpp.i
 # target to preprocess a source file
 src/fft.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.i
 .PHONY : src/fft.cpp.i
 
 src/fft.s: src/fft.cpp.s
@@ -177,7 +192,32 @@ src/fft.s: src/fft.cpp.s
 # target to generate assembly for a file
 src/fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/fft.cpp.s
 .PHONY : src/fft.cpp.s
+
+src/sampler.o: src/sampler.cpp.o
+.PHONY : src/sampler.o
+
+# target to build an object file
+src/sampler.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.o
+.PHONY : src/sampler.cpp.o
+
+src/sampler.i: src/sampler.cpp.i
+.PHONY : src/sampler.i
+
+# target to preprocess a source file
+src/sampler.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.i
+.PHONY : src/sampler.cpp.i
+
+src/sampler.s: src/sampler.cpp.s
+.PHONY : src/sampler.s
+
+# target to generate assembly for a file
+src/sampler.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/sampler.cpp.s
+.PHONY : src/sampler.cpp.s
 
 src/signal.o: src/signal.cpp.o
 .PHONY : src/signal.o
@@ -186,6 +226,7 @@ src/signal.o: src/signal.cpp.o
 src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -195,6 +236,7 @@ src/signal.i: src/signal.cpp.i
 src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -204,6 +246,7 @@ src/signal.s: src/signal.cpp.s
 src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
 
 tests/test_fft.o: tests/test_fft.cpp.o
@@ -229,6 +272,30 @@ tests/test_fft.s: tests/test_fft.cpp.s
 tests/test_fft.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.s
 .PHONY : tests/test_fft.cpp.s
+
+tests/test_sampler.o: tests/test_sampler.cpp.o
+.PHONY : tests/test_sampler.o
+
+# target to build an object file
+tests/test_sampler.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/tests/test_sampler.cpp.o
+.PHONY : tests/test_sampler.cpp.o
+
+tests/test_sampler.i: tests/test_sampler.cpp.i
+.PHONY : tests/test_sampler.i
+
+# target to preprocess a source file
+tests/test_sampler.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/tests/test_sampler.cpp.i
+.PHONY : tests/test_sampler.cpp.i
+
+tests/test_sampler.s: tests/test_sampler.cpp.s
+.PHONY : tests/test_sampler.s
+
+# target to generate assembly for a file
+tests/test_sampler.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_sampler.dir/build.make CMakeFiles/test_sampler.dir/tests/test_sampler.cpp.s
+.PHONY : tests/test_sampler.cpp.s
 
 tests/test_signal.o: tests/test_signal.cpp.o
 .PHONY : tests/test_signal.o
@@ -312,16 +379,23 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... kissfft"
 	@echo "... test_fft"
+	@echo "... test_sampler"
 	@echo "... test_signal"
 	@echo "... src/fft.o"
 	@echo "... src/fft.i"
 	@echo "... src/fft.s"
+	@echo "... src/sampler.o"
+	@echo "... src/sampler.i"
+	@echo "... src/sampler.s"
 	@echo "... src/signal.o"
 	@echo "... src/signal.i"
 	@echo "... src/signal.s"
 	@echo "... tests/test_fft.o"
 	@echo "... tests/test_fft.i"
 	@echo "... tests/test_fft.s"
+	@echo "... tests/test_sampler.o"
+	@echo "... tests/test_sampler.i"
+	@echo "... tests/test_sampler.s"
 	@echo "... tests/test_signal.o"
 	@echo "... tests/test_signal.i"
 	@echo "... tests/test_signal.s"

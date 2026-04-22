@@ -9,5 +9,5 @@ file(REMOVE_RECURSE
 
 # Per-language clean rules from dependency scanning.
 foreach (lang C)
-    include(CMakeFiles/kissfft.dir/cmake_clean_${lang}.cmake OPTIONAL)
+  include(CMakeFiles/kissfft.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach ()

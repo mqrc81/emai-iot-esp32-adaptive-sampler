@@ -59,4 +59,5 @@ set(CMAKE_DEPEND_INFO_FILES
         "CMakeFiles/kissfft.dir/DependInfo.cmake"
         "CMakeFiles/test_signal.dir/DependInfo.cmake"
         "CMakeFiles/test_fft.dir/DependInfo.cmake"
+        "CMakeFiles/test_sampler.dir/DependInfo.cmake"
 )

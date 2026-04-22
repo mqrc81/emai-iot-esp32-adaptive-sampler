@@ -28,3 +28,13 @@ add_executable(test_fft
 )
 target_link_libraries(test_fft m kissfft)
 target_include_directories(test_fft PRIVATE src)
+
+# Sampler test
+add_executable(test_sampler
+        src/signal.cpp
+        src/fft.cpp
+        src/sampler.cpp
+        tests/test_sampler.cpp
+)
+target_link_libraries(test_sampler m kissfft)
+target_include_directories(test_sampler PRIVATE src)
