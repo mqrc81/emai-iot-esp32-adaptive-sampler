@@ -1,3 +1,5 @@
+/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/kissfft.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_signal.dir
+/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/test_fft.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/edit_cache.dir
 /Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/CMakeFiles/rebuild_cache.dir

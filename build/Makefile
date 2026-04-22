@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named kissfft
+
+# Build rule for target.
+kissfft: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 kissfft
+.PHONY : kissfft
+
+# fast build rule for target.
+kissfft/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/build
+.PHONY : kissfft/fast
+
+#=============================================================================
 # Target rules for targets named test_signal
 
 # Build rule for target.
@@ -129,12 +142,50 @@ test_signal/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/build
 .PHONY : test_signal/fast
 
+#=============================================================================
+# Target rules for targets named test_fft
+
+# Build rule for target.
+test_fft: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test_fft
+.PHONY : test_fft
+
+# fast build rule for target.
+test_fft/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/build
+.PHONY : test_fft/fast
+
+src/fft.o: src/fft.cpp.o
+.PHONY : src/fft.o
+
+# target to build an object file
+src/fft.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.o
+.PHONY : src/fft.cpp.o
+
+src/fft.i: src/fft.cpp.i
+.PHONY : src/fft.i
+
+# target to preprocess a source file
+src/fft.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.i
+.PHONY : src/fft.cpp.i
+
+src/fft.s: src/fft.cpp.s
+.PHONY : src/fft.s
+
+# target to generate assembly for a file
+src/fft.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/fft.cpp.s
+.PHONY : src/fft.cpp.s
+
 src/signal.o: src/signal.cpp.o
 .PHONY : src/signal.o
 
 # target to build an object file
 src/signal.cpp.o:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.o
 .PHONY : src/signal.cpp.o
 
 src/signal.i: src/signal.cpp.i
@@ -143,6 +194,7 @@ src/signal.i: src/signal.cpp.i
 # target to preprocess a source file
 src/signal.cpp.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.i
 .PHONY : src/signal.cpp.i
 
 src/signal.s: src/signal.cpp.s
@@ -151,7 +203,32 @@ src/signal.s: src/signal.cpp.s
 # target to generate assembly for a file
 src/signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/src/signal.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/src/signal.cpp.s
 .PHONY : src/signal.cpp.s
+
+tests/test_fft.o: tests/test_fft.cpp.o
+.PHONY : tests/test_fft.o
+
+# target to build an object file
+tests/test_fft.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.o
+.PHONY : tests/test_fft.cpp.o
+
+tests/test_fft.i: tests/test_fft.cpp.i
+.PHONY : tests/test_fft.i
+
+# target to preprocess a source file
+tests/test_fft.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.i
+.PHONY : tests/test_fft.cpp.i
+
+tests/test_fft.s: tests/test_fft.cpp.s
+.PHONY : tests/test_fft.s
+
+# target to generate assembly for a file
+tests/test_fft.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_fft.dir/build.make CMakeFiles/test_fft.dir/tests/test_fft.cpp.s
+.PHONY : tests/test_fft.cpp.s
 
 tests/test_signal.o: tests/test_signal.cpp.o
 .PHONY : tests/test_signal.o
@@ -177,6 +254,54 @@ tests/test_signal.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test_signal.dir/build.make CMakeFiles/test_signal.dir/tests/test_signal.cpp.s
 .PHONY : tests/test_signal.cpp.s
 
+third_party/kissfft/kiss_fft.o: third_party/kissfft/kiss_fft.c.o
+.PHONY : third_party/kissfft/kiss_fft.o
+
+# target to build an object file
+third_party/kissfft/kiss_fft.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fft.c.o
+.PHONY : third_party/kissfft/kiss_fft.c.o
+
+third_party/kissfft/kiss_fft.i: third_party/kissfft/kiss_fft.c.i
+.PHONY : third_party/kissfft/kiss_fft.i
+
+# target to preprocess a source file
+third_party/kissfft/kiss_fft.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fft.c.i
+.PHONY : third_party/kissfft/kiss_fft.c.i
+
+third_party/kissfft/kiss_fft.s: third_party/kissfft/kiss_fft.c.s
+.PHONY : third_party/kissfft/kiss_fft.s
+
+# target to generate assembly for a file
+third_party/kissfft/kiss_fft.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fft.c.s
+.PHONY : third_party/kissfft/kiss_fft.c.s
+
+third_party/kissfft/kiss_fftr.o: third_party/kissfft/kiss_fftr.c.o
+.PHONY : third_party/kissfft/kiss_fftr.o
+
+# target to build an object file
+third_party/kissfft/kiss_fftr.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fftr.c.o
+.PHONY : third_party/kissfft/kiss_fftr.c.o
+
+third_party/kissfft/kiss_fftr.i: third_party/kissfft/kiss_fftr.c.i
+.PHONY : third_party/kissfft/kiss_fftr.i
+
+# target to preprocess a source file
+third_party/kissfft/kiss_fftr.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fftr.c.i
+.PHONY : third_party/kissfft/kiss_fftr.c.i
+
+third_party/kissfft/kiss_fftr.s: third_party/kissfft/kiss_fftr.c.s
+.PHONY : third_party/kissfft/kiss_fftr.s
+
+# target to generate assembly for a file
+third_party/kissfft/kiss_fftr.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/kissfft.dir/build.make CMakeFiles/kissfft.dir/third_party/kissfft/kiss_fftr.c.s
+.PHONY : third_party/kissfft/kiss_fftr.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -185,13 +310,27 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... kissfft"
+	@echo "... test_fft"
 	@echo "... test_signal"
+	@echo "... src/fft.o"
+	@echo "... src/fft.i"
+	@echo "... src/fft.s"
 	@echo "... src/signal.o"
 	@echo "... src/signal.i"
 	@echo "... src/signal.s"
+	@echo "... tests/test_fft.o"
+	@echo "... tests/test_fft.i"
+	@echo "... tests/test_fft.s"
 	@echo "... tests/test_signal.o"
 	@echo "... tests/test_signal.i"
 	@echo "... tests/test_signal.s"
+	@echo "... third_party/kissfft/kiss_fft.o"
+	@echo "... third_party/kissfft/kiss_fft.i"
+	@echo "... third_party/kissfft/kiss_fft.s"
+	@echo "... third_party/kissfft/kiss_fftr.o"
+	@echo "... third_party/kissfft/kiss_fftr.i"
+	@echo "... third_party/kissfft/kiss_fftr.s"
 .PHONY : help
 
 
