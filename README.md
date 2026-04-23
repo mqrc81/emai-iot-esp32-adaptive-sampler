@@ -597,6 +597,9 @@ Key prompt stages:
 - Window size trade-off evaluation
 - Three signal comparison with generalised `SignalDef` struct
 - LoRaWAN stub with Cayenne LPP encoding
+- Arduino/PlatformIO firmware port for ESP32
+- IoT-Lab experiment setup and MQTT serial bridge configuration
+- Debugging serial port compatibility (Serial vs Serial0, .h vs .hpp headers)
 
 ### Code Quality Assessment
 
@@ -615,6 +618,11 @@ Key prompt stages:
 - LoRaWAN airtime calculation contained a bug (used `window_ms` instead of window interval seconds)
 - Cannot benchmark real hardware — all performance figures derived analytically
 - Occasionally required explicit prompting to justify parameter choices rather than flagging them proactively
+- Guidance on Wokwi serial monitor in CLion plugin was incorrect and never resolved — had to abandon Wokwi entirely
+- IoT-Lab workflow guidance assumed standard M3 node behavior; Arduino Nano ESP32 serial architecture is fundamentally
+  different (native USB vs UART) and incompatible with the serial aggregator
+- ESP32 flashing format knowledge was incomplete — required iterating through .bin, .elf, and merged binary before
+  discovering the node was hardware-faulty regardless
 
 ### Opportunities and Limitations of LLMs for IoT Development
 
@@ -624,11 +632,14 @@ Key prompt stages:
 - Strong at signal processing mathematics — FFT, statistical filters, encoding formats
 - Useful for interpreting results and identifying their causes (bin resolution, contamination effects)
 - Effective at iterative debugging when given compiler errors or unexpected output
+- Useful for navigating unfamiliar infrastructure (IoT-Lab CLI, MQTT bridge setup, esptool commands) by providing
+  starting points even when exact details needed verification
 
 **Limitations:**
 
 - Cannot interact with physical hardware or simulate real timing
-- Knowledge of rapidly evolving toolchains (Wokwi CLion plugin, PlatformIO) may be outdated
+- Knowledge of rapidly evolving toolchains (Wokwi CLion plugin, PlatformIO, Arduino Nano ESP32 serial architecture) may
+  be outdated
 - Produces plausible-looking but incorrect code for edge cases (e.g. airtime calculation bug)
 - Requires domain knowledge from the user to validate correctness — blind trust would produce subtle errors
 - Does not replace understanding: every result in this report was interpreted and verified by the author
