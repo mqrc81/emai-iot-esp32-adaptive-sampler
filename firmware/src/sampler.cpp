@@ -1,6 +1,6 @@
-#include "sampler.h"
-#include "signal.h"
-#include "fft.h"
+#include "sampler.hpp"
+#include "signal.hpp"
+#include "fft.hpp"
 #include <Arduino.h>
 #include <stdlib.h>
 #include <stdio.h>

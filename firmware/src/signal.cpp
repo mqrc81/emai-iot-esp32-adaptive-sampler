@@ -1,4 +1,4 @@
-#include "signal.h"
+#include "signal.hpp"
 #include <Arduino.h>
 #include <stdlib.h>
 
@@ -19,7 +19,7 @@ static float gaussianNoise(float stdDev)
     return z * stdDev;
 }
 
-float generateNoisySignal(float t, const SignalConfig& config, int* anomalyOut)
+float generateNoisySignal(float t, const struct SignalConfig& config, int* anomalyOut)
 {
     // Base signal
     float s = config.a1 * sinf(TWO_PI_F * config.f1 * t) +
@@ -47,7 +47,7 @@ float generateNoisySignal(float t, const SignalConfig& config, int* anomalyOut)
     return s;
 }
 
-float generateSignalFromDef(float t, const SignalDef& def)
+float generateSignalFromDef(float t, const struct SignalDef& def)
 {
     float s = 0.0f;
     for (int i = 0; i < def.numComponents; i++)

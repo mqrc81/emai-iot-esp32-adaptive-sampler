@@ -7,4 +7,4 @@ struct WindowResult
     int sampleCount;
 };
 
-WindowResult computeWindow(float sampleRateHz, float windowSecs);
+struct WindowResult computeWindow(float sampleRateHz, float windowSecs);

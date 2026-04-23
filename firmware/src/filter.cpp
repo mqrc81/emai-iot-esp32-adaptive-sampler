@@ -1,4 +1,4 @@
-#include "filter.h"
+#include "filter.hpp"
 #include <Arduino.h>
 #include <stdlib.h>
 #include <string.h>

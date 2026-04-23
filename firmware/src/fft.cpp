@@ -1,4 +1,4 @@
-#include "fft.h"
+#include "fft.hpp"
 #include <Arduino.h>
 
 FFTResult computeFFT(const float* samples, int size, float sampleRateHz)
