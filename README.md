@@ -94,7 +94,7 @@ cd build
 ./test_lorawan
 ```
 
-Note that the output of all tests is available in [/results]().
+Note that the output of all tests is available in [/results](/results).
 
 ### Plot signals
 
