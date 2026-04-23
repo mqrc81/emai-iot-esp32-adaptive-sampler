@@ -12,19 +12,19 @@ will be developed using the FreeRTOS.
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Setup & Build](#setup--build)
-3. [Maximum Sampling Frequency](#maximum-sampling-frequency)
-4. [FFT & Adaptive Sampling](#fft--adaptive-sampling)
-5. [Windowed Average](#windowed-average)
-6. [MQTT](#mqtt)
-7. [LoRaWAN / TTN](#lorawan--ttn)
-8. [Performance Evaluation](#performance-evaluation)
-9. [3 Input Signals (Bonus)](#3-input-signals-bonus)
-10. [Noisy Signal & Anomaly Detection (Bonus)](#noisy-signal--anomaly-detection-bonus)
-11. [FFT Contamination (Bonus)](#fft-contamination-bonus)
-12. [Window Size Trade-off (Bonus)](#window-size-trade-off-bonus)
-13. [LLM Documentation](#llm-documentation)
-14. [Simulation Limitations](#simulation-limitations)
+2. [Methodology & Limitations](#methodology--limitations)
+3. [Setup & Build](#setup--build)
+4. [Maximum Sampling Frequency](#maximum-sampling-frequency)
+5. [FFT & Adaptive Sampling](#fft--adaptive-sampling)
+6. [Windowed Average](#windowed-average)
+7. [MQTT](#mqtt)
+8. [LoRaWAN / TTN](#lorawan--ttn)
+9. [Performance Evaluation](#performance-evaluation)
+10. [3 Input Signals (Bonus)](#3-input-signals-bonus)
+11. [Noisy Signal & Anomaly Detection (Bonus)](#noisy-signal--anomaly-detection-bonus)
+12. [FFT Contamination (Bonus)](#fft-contamination-bonus)
+13. [Window Size Trade-off (Bonus)](#window-size-trade-off-bonus)
+14. [LLM Documentation](#llm-documentation)
 
 ---
 
@@ -32,46 +32,76 @@ will be developed using the FreeRTOS.
 
 The system represents adaptive IoT sampling with the following stages:
 
-1. Signal Generation (1000 Hz)
-2. FFT Analysis (2048 samples)
-
-   a) Identify dominant frequency
-
-   b) Compute optimal sampling rate (Nyquist)
-3. Adaptive Sampling (+-10 Hz over 5s window)
-
-   a) Anamoly filtering (Z-score & Hampel)
-
-   b) Compute windowed average
-4. MQTT Publish to local Mosquitto broker (edge)
-5. LoRaWAN Stub to TTN (cloud)
+```
+Signal Generation (1000 Hz)
+        ↓
+FFT Analysis (2048 samples)
+→ Identify dominant frequency
+→ Compute optimal sampling rate (Nyquist)
+        ↓
+Adaptive Sampling (~10 Hz over 5s window)
+→ Optional anomaly filtering (Z-score / Hampel)
+→ Compute windowed average
+        ↓
+MQTT Publish → Local Mosquitto Broker (edge)
+LoRaWAN Stub → TTN (cloud)
+```
 
 **Hardware target**: ESP32 DevKit V1
 
 **Framework**: FreeRTOS (simulated natively on macOS for development and evaluation)
 
-**Note on simulation**: Everything was implemented and validated in native C++, since I didn't have the ESP32 device at
-my disposal. Signal processing, FFT, and anomaly detection results are mathematically equivalent to firmware execution.
-Energy and latency numbers are derived from measured rates (explained more later).
+---
+
+## Methodology & Limitations
+
+### Implementation Approach
+
+This project was implemented in native C++ on macOS rather than
+on physical ESP32 hardware. Signal processing, FFT, and anomaly detection results
+are mathematically equivalent to executing it on an ESP32 device and independent of hardware.
+
+### IoT-Lab Attempt
+
+I attempted real hardware validation using FIT IoT-Lab with the Arduino Nano
+ESP32 node at Grenoble. Despite multiple flashing attempts (firmware.bin,
+firmware.elf, merged binary) and submission methods, the node consistently
+reported a deployment error. The IoT-Lab API confirmed the node state as "Alive",
+indicating a hardware fault on the testbed infrastructure. Serial port forwarding
+and the MQTT serial bridge both returned ConnectionRefusedError(111). As only one
+Arduino Nano ESP32 node exists, I was unable to complete real hardware benchmarking.
+
+### Simulation Limitations
+
+| Metric            | Status                  | Caveat                                        |
+|-------------------|-------------------------|-----------------------------------------------|
+| Max sampling rate | Derived                 | Based on ESP32 datasheet + FreeRTOS tick rate |
+| Energy saving     | Calculated              | Upper bound on sampling energy only           |
+| E2E latency       | Measured (Mac loopback) | Real WiFi latency would be 1–50ms             |
+| MQTT              | Real broker (Mosquitto) | Protocol is real; WiFi stack not exercised    |
+| LoRaWAN           | Stubbed                 | Hardware unavailable; encoding is correct     |
+| Signal processing | Exact                   | Hardware-independent mathematical results     |
 
 ---
 
 ## Setup & Build
 
-### Prerequisites
+### Simulation
+
+#### Prerequisites
 
 ```bash
 brew install mosquitto cmake
 ```
 
-### Build
+#### Build
 
 ```bash
 mkdir build && cd build
 cmake .. && make
 ```
 
-### Run all tests
+#### Run all tests
 
 ```bash
 # Terminal 1: MQTT broker
@@ -96,12 +126,55 @@ cd build
 
 Note that the output of all tests is available in [/results](/results).
 
-### Plot signals
+#### Plot signals
 
 ```bash
 cd scripts
 python3 plot_signal.py
 python3 plot_signal_noisy.py
+```
+
+### Arduino Firmware
+
+#### IoT-Lab (Attempted)
+
+The firmware can be built for the Arduino Nano ESP32 node on FIT IoT-Lab:
+
+1. Sign up to IoT-Lab (with login & password)
+2. Add your SSH key in profile section
+3. Create a new experiment in the testbed with a node using Arduino-Nano-ESP32 architecture
+
+Replace `<login>`, `<password>`, and `<node_id>` with values from IoT-Lab.
+
+```bash
+# Terminal 1
+mosquitto_sub --insecure -h mqtt4.iot-lab.info -p 8883 \                                                                 ✘ INT  30s 
+  -u mschmidt -P <password> \
+  -t "iotlab/<mschmidt>/#" -v | tee ./results/iotlab/results.json
+
+# Terminal 2
+cd firmware && pio run && scp ./.pio/build/arduino_nano_esp32/firmware.bin <login>@grenoble.iot-lab.info:~/firmware.bin
+
+# Terminal 3
+ssh <login>@grenoble.iot-lab.info
+
+iotlab-node --flash ~/firmware.bin -l grenoble,arduino-nano-esp32,<node_id> -u <login>
+
+iotlab_mqtt_bridge
+```
+
+> **Note:** The Arduino Nano ESP32 node at Grenoble (arduino-nano-esp32-1)
+> consistently reported deployment error during testing, indicating a hardware
+> fault on the testbed. See [Methodology & Limitations](#methodology--limitations)
+> for details.
+
+#### ESP32 Device (Not Attempted)
+
+```bash
+cd firmware 
+pio run
+pio run --target upload
+pio device monitor    
 ```
 
 ---
@@ -559,23 +632,3 @@ Key prompt stages:
 - Produces plausible-looking but incorrect code for edge cases (e.g. airtime calculation bug)
 - Requires domain knowledge from the user to validate correctness — blind trust would produce subtle errors
 - Does not replace understanding: every result in this report was interpreted and verified by the author
-
----
-
-## Simulation Limitations
-
-This project was implemented in a native C++ simulation on MacOS rather than on a physical ESP32 hardware or IoT-Lab.
-The following limitations apply:
-
-| Metric            | Status                  | Caveat                                                                  |
-|-------------------|-------------------------|-------------------------------------------------------------------------|
-| Max sampling rate | Derived                 | Based on ESP32 datasheet + FreeRTOS characteristics, not measured       |
-| Energy saving     | Calculated              | Proportional to sample rate ratio (upper bound on sampling energy only) |
-| E2E latency       | Measured (Mac loopback) | Real ESP32-to-server latency would be 1–50 ms via WiFi                  |
-| MQTT              | Real broker (Mosquitto) | Protocol is real; hardware WiFi stack not applied                       |
-| LoRaWAN           | Stubbed                 | Hard-ware not available; encoding is correct                            |
-| Signal processing | Calculated              | FFT, filters, anomaly detection are hardware-independent                |
-
-All signal processing, FFT, and anomaly detection results are mathematically valid and would produce identical results
-on an ESP32 device. The simulation is appropriate for validating the algorithms, but real hardware would be required for
-accurate energy and latency measurements.
