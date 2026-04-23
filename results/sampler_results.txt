@@ -1,0 +1,17 @@
+=== FFT ===
+Dominant freq    : 4.88 Hz
+Optimal rate     : 9.77 Hz
+
+=== Window @ max rate (1000 Hz) ===
+Average          : 0.000000
+Samples          : 5000
+Duration         : 0.341 ms
+
+=== Window @ adaptive rate (9.77 Hz) ===
+Average          : 0.051832
+Samples          : 48
+Duration         : 0.003 ms
+
+=== Metrics ===
+Sample reduction : 104.2x
+Avg difference   : 0.051832
