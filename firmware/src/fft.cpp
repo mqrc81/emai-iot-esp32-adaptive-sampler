@@ -59,7 +59,7 @@ void printTopBins(const float* samples, int size, float sampleRateHz, int topN)
 
     float freqResolution = sampleRateHz / size;
 
-    Serial.printf("Top %d frequency bins:\n", topN);
+    Serial0.printf("Top %d frequency bins:\n", topN);
     for (int t = 0; t < topN; t++)
     {
         double maxMag = 0.0;
@@ -72,8 +72,8 @@ void printTopBins(const float* samples, int size, float sampleRateHz, int topN)
                 maxBin = i;
             }
         }
-        Serial.printf("  bin %d: %.3f Hz, magnitude %.2f\n",
-                      maxBin, maxBin * freqResolution, (float)maxMag);
+        Serial0.printf("  bin %d: %.3f Hz, magnitude %.2f\n",
+                       maxBin, maxBin * freqResolution, (float)maxMag);
         real[maxBin] = 0.0;
     }
 

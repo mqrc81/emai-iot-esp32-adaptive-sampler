@@ -36,7 +36,7 @@ static float elapsedMs(uint64_t startUs)
 // Print a single JSON line; bridge forwards each line to MQTT
 static void printJSON(const char* buf)
 {
-    Serial.println(buf);
+    Serial0.println(buf);
 }
 
 // ======= PHASES =======
@@ -44,7 +44,7 @@ static void printJSON(const char* buf)
 // --- 1. Max sampling rate benchmark ---
 void benchmarkMaxRate()
 {
-    Serial.println("{\"phase\":\"BENCHMARK_START\"}");
+    Serial0.println("{\"phase\":\"BENCHMARK_START\"}");
 
     uint64_t start = esp_timer_get_time();
     volatile float sink = 0.0f; // prevent compiler optimising away the loop
@@ -216,7 +216,7 @@ void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
 // --- 5. 3 signals comparison ---
 void runSignalsComparison()
 {
-    Serial.println("{\"phase\":\"SIGNALS_COMPARISON_START\"}");
+    Serial0.println("{\"phase\":\"SIGNALS_COMPARISON_START\"}");
 
     SignalDef signals[3];
 
@@ -264,12 +264,12 @@ void runSignalsComparison()
 
 void setup()
 {
-    Serial.begin(115200);
+    Serial0.begin(115200);
     delay(1000); // let serial stabilise
 
     srand(42); // fixed seed for reproducibility
 
-    Serial.println("{\"phase\":\"BOOT\",\"max_rate\":1000,\"fft_size\":2048,\"window_secs\":5}");
+    Serial0.println("{\"phase\":\"BOOT\",\"max_rate\":1000,\"fft_size\":2048,\"window_secs\":5}");
 
     // --- Phase 1: Benchmark max sampling rate ---
     benchmarkMaxRate();
@@ -297,7 +297,7 @@ void setup()
         float* samples = (float*)malloc(totalSamples * sizeof(float));
         char buf2[256];
 
-        Serial.println("{\"phase\":\"WINDOW_NOISY_START\"}");
+        Serial0.println("{\"phase\":\"WINDOW_NOISY_START\"}");
         for (int w = 0; w < NUM_WINDOWS; w++)
         {
             uint64_t e2eStart = esp_timer_get_time();
@@ -328,7 +328,7 @@ void setup()
     // --- Phase 8: Three signals comparison ---
     runSignalsComparison();
 
-    Serial.println("{\"phase\":\"DONE\"}");
+    Serial0.println("{\"phase\":\"DONE\"}");
 }
 
 void loop()
