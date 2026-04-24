@@ -401,6 +401,8 @@ s(t) = 2sin(2π·3t) + 4sin(2π·5t) + n(t) + A(t)
 - `A(t)` = Sparse spike process with probability p per sample, which injects U(5,15) (models hardware errors and other
   unexpected physical disturbances)
 
+![Noisy Signal](/results/simulation/signal_noisy_plot.png)
+
 At p=0.02 with seed 42: 16 anomalies were injected in 1000 samples (1.6%, which is lower than the expected 2.0% but
 within the range of normal statistical deviations).
 
@@ -459,6 +461,8 @@ distinguishable from signal + Gaussian noise.
 | 1%  | 7   | 2  | 0  | 971 | 1.000 | 0.002 | 0.163      |
 | 5%  | 54  | 1  | 0  | 925 | 1.000 | 0.001 | 0.155      |
 | 10% | 109 | 0  | 0  | 871 | 1.000 | 0.000 | 0.155      |
+
+![Filters Comparison](/results/simulation/tpr_comparison.png)
 
 ### Discussion
 
