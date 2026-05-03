@@ -5,18 +5,15 @@
 
 // --- Utility functions ---
 
-static float computeMean(const float* data, int n)
-{
+static float computeMean(const float *data, int n) {
     float sum = 0.0f;
     for (int i = 0; i < n; i++) sum += data[i];
     return sum / n;
 }
 
-static float computeStd(const float* data, int n, float mean)
-{
+static float computeStd(const float *data, int n, float mean) {
     float sum = 0.0f;
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         float diff = data[i] - mean;
         sum += diff * diff;
     }
@@ -24,17 +21,15 @@ static float computeStd(const float* data, int n, float mean)
 }
 
 // Comparison function for qsort
-static int floatCmp(const void* a, const void* b)
-{
-    float fa = *(const float*)a;
-    float fb = *(const float*)b;
+static int floatCmp(const void *a, const void *b) {
+    float fa = *(const float *) a;
+    float fb = *(const float *) b;
     return (fa > fb) - (fa < fb);
 }
 
-static float computeMedian(float* data, int n)
-{
+static float computeMedian(float *data, int n) {
     // Work on a copy to avoid modifying the original window
-    float* sorted = (float*)malloc(n * sizeof(float));
+    float *sorted = (float *) malloc(n * sizeof(float));
     memcpy(sorted, data, n * sizeof(float));
     qsort(sorted, n, sizeof(float), floatCmp);
     float median = (n % 2 == 0)
@@ -46,9 +41,8 @@ static float computeMedian(float* data, int n)
 
 // --- Filter implementations ---
 
-FilterResult zscoreFilter(const float* window, int windowSize,
-                          int centerIdx, float threshold)
-{
+FilterResult zscoreFilter(const float *window, int windowSize,
+                          int centerIdx, float threshold) {
     float mean = computeMean(window, windowSize);
     float std = computeStd(window, windowSize, mean);
 
@@ -61,17 +55,16 @@ FilterResult zscoreFilter(const float* window, int windowSize,
     return result;
 }
 
-FilterResult hampelFilter(const float* window, int windowSize,
-                          int centerIdx, float threshold)
-{
+FilterResult hampelFilter(const float *window, int windowSize,
+                          int centerIdx, float threshold) {
     // Copy window for median computation
-    float* buf = (float*)malloc(windowSize * sizeof(float));
+    float *buf = (float *) malloc(windowSize * sizeof(float));
     memcpy(buf, window, windowSize * sizeof(float));
 
     float median = computeMedian(buf, windowSize);
 
     // Compute MAD: median of |x_i - median|
-    float* deviations = (float*)malloc(windowSize * sizeof(float));
+    float *deviations = (float *) malloc(windowSize * sizeof(float));
     for (int i = 0; i < windowSize; i++)
         deviations[i] = fabsf(window[i] - median);
     float mad = computeMedian(deviations, windowSize);

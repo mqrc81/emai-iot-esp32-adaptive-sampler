@@ -1,7 +1,6 @@
 #pragma once
 
-struct WindowResult
-{
+struct WindowResult {
     float average;
     float windowDurationMs;
     int sampleCount;

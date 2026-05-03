@@ -5,25 +5,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include "esp_timer.h"
 
 #define FFT_SIZE 256
 
 // Returns elapsed milliseconds since start
-static float elapsedMs(uint64_t startUs)
-{
+static float elapsedMs(uint64_t startUs) {
     return (esp_timer_get_time() - startUs) / 1000.0f;
 }
 
-WindowResult computeWindow(float sampleRateHz, float windowSecs)
-{
-    int totalSamples = (int)(sampleRateHz * windowSecs);
-    float* buffer = (float*)malloc(totalSamples * sizeof(float));
+WindowResult computeWindow(float sampleRateHz, float windowSecs) {
+    int totalSamples = (int) (sampleRateHz * windowSecs);
+    float *buffer = (float *) malloc(totalSamples * sizeof(float));
 
     uint64_t start = esp_timer_get_time();
 
     // Collect samples
-    for (int i = 0; i < totalSamples; i++)
-    {
+    for (int i = 0; i < totalSamples; i++) {
         float t = i / sampleRateHz;
         buffer[i] = generateSignal(t);
     }

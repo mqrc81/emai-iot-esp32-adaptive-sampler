@@ -4,6 +4,7 @@
 #include "fft.hpp"
 #include "sampler.hpp"
 #include "filter.hpp"
+#include "esp_timer.h"
 
 // ======= CONFIG =======
 
@@ -28,29 +29,25 @@ static SignalConfig noisyConfig = {
 
 // ======= HELPERS =======
 
-static float elapsedMs(uint64_t startUs)
-{
+static float elapsedMs(uint64_t startUs) {
     return (esp_timer_get_time() - startUs) / 1000.0f;
 }
 
 // Print a single JSON line; bridge forwards each line to MQTT
-static void printJSON(const char* buf)
-{
+static void printJSON(const char *buf) {
     Serial0.println(buf);
 }
 
 // ======= PHASES =======
 
 // --- 1. Max sampling rate benchmark ---
-void benchmarkMaxRate()
-{
+void benchmarkMaxRate() {
     Serial0.println("{\"phase\":\"BENCHMARK_START\"}");
 
     uint64_t start = esp_timer_get_time();
     volatile float sink = 0.0f; // prevent compiler optimising away the loop
 
-    for (int i = 0; i < BENCHMARK_SAMPLES; i++)
-    {
+    for (int i = 0; i < BENCHMARK_SAMPLES; i++) {
         float t = i / MAX_SAMPLE_RATE;
         sink = generateSignal(t); // represents an ADC read + signal generation
     }
@@ -66,11 +63,9 @@ void benchmarkMaxRate()
 }
 
 // --- 2. FFT on clean signal ---
-FFTResult runFFT(const struct SignalDef* sigDef)
-{
-    float* buf = (float*)malloc(FFT_SIZE * sizeof(float));
-    for (int i = 0; i < FFT_SIZE; i++)
-    {
+FFTResult runFFT(const struct SignalDef *sigDef) {
+    float *buf = (float *) malloc(FFT_SIZE * sizeof(float));
+    for (int i = 0; i < FFT_SIZE; i++) {
         float t = i / MAX_SAMPLE_RATE;
         buf[i] = sigDef
                      ? generateSignalFromDef(t, *sigDef)
@@ -83,25 +78,22 @@ FFTResult runFFT(const struct SignalDef* sigDef)
 }
 
 // --- 3. Windowed average (clean signal) ---
-void runWindowedAverage(float adaptiveRate, const char* label, const struct SignalDef* sigDef)
-{
+void runWindowedAverage(float adaptiveRate, const char *label, const struct SignalDef *sigDef) {
     char buf[256];
     snprintf(buf, sizeof(buf),
              "{\"phase\":\"%s_START\",\"adaptive_rate\":%.2f,\"window_secs\":%.1f,\"num_windows\":%d}",
              label, adaptiveRate, WINDOW_SECS, NUM_WINDOWS);
     printJSON(buf);
 
-    int totalSamples = (int)(adaptiveRate * WINDOW_SECS);
-    float* samples = (float*)malloc(totalSamples * sizeof(float));
+    int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+    float *samples = (float *) malloc(totalSamples * sizeof(float));
 
-    for (int w = 0; w < NUM_WINDOWS; w++)
-    {
+    for (int w = 0; w < NUM_WINDOWS; w++) {
         uint64_t e2eStart = esp_timer_get_time();
 
         // Collect samples
         uint64_t computeStart = esp_timer_get_time();
-        for (int i = 0; i < totalSamples; i++)
-        {
+        for (int i = 0; i < totalSamples; i++) {
             float t = i / adaptiveRate;
             samples[i] = sigDef
                              ? generateSignalFromDef(t, *sigDef)
@@ -125,29 +117,26 @@ void runWindowedAverage(float adaptiveRate, const char* label, const struct Sign
 }
 
 // --- 4. Windowed average with filter (noisy signal) ---
-void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
-{
+void runWindowedFiltered(float adaptiveRate, const char *label, int useZscore) {
     char buf[256];
     snprintf(buf, sizeof(buf),
              "{\"phase\":\"%s_START\",\"adaptive_rate\":%.2f,\"window_size\":%d}",
              label, adaptiveRate, FILTER_WINDOW);
     printJSON(buf);
 
-    int totalSamples = (int)(adaptiveRate * WINDOW_SECS);
-    float* samples = (float*)malloc(totalSamples * sizeof(float));
-    int* gt = (int*)malloc(totalSamples * sizeof(int));
+    int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+    float *samples = (float *) malloc(totalSamples * sizeof(float));
+    int *gt = (int *) malloc(totalSamples * sizeof(int));
 
     int half = FILTER_WINDOW / 2;
     int tp = 0, fp = 0, fn = 0, tn = 0;
     float totalError = 0.0f;
 
-    for (int w = 0; w < NUM_WINDOWS; w++)
-    {
+    for (int w = 0; w < NUM_WINDOWS; w++) {
         uint64_t e2eStart = esp_timer_get_time();
 
         // Generate noisy samples
-        for (int i = 0; i < totalSamples; i++)
-        {
+        for (int i = 0; i < totalSamples; i++) {
             float t = i / adaptiveRate;
             samples[i] = generateNoisySignal(t, noisyConfig, &gt[i]);
         }
@@ -157,14 +146,12 @@ void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
         float sum = 0.0f;
         int counted = 0;
 
-        for (int i = 0; i < totalSamples; i++)
-        {
+        for (int i = 0; i < totalSamples; i++) {
             float cleaned;
             int flagged = 0;
 
-            if (i >= half && i < totalSamples - half)
-            {
-                const float* window = &samples[i - half];
+            if (i >= half && i < totalSamples - half) {
+                const float *window = &samples[i - half];
                 FilterResult r = useZscore
                                      ? zscoreFilter(window, FILTER_WINDOW, half, ZSCORE_THRESH)
                                      : hampelFilter(window, FILTER_WINDOW, half, HAMPEL_THRESH);
@@ -181,9 +168,7 @@ void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
                 float trueVal = generateSignal(i / adaptiveRate);
                 totalError += fabsf(cleaned - trueVal);
                 counted++;
-            }
-            else
-            {
+            } else {
                 cleaned = samples[i];
             }
             sum += cleaned;
@@ -200,8 +185,8 @@ void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
     }
 
     // Summary
-    float tpr = (float)tp / (tp + fn + 1e-6f);
-    float fpr = (float)fp / (fp + tn + 1e-6f);
+    float tpr = (float) tp / (tp + fn + 1e-6f);
+    float fpr = (float) fp / (fp + tn + 1e-6f);
     float meanError = totalError / ((NUM_WINDOWS * (totalSamples - 2 * half)) + 1e-6f);
 
     snprintf(buf, sizeof(buf),
@@ -214,8 +199,7 @@ void runWindowedFiltered(float adaptiveRate, const char* label, int useZscore)
 }
 
 // --- 5. 3 signals comparison ---
-void runSignalsComparison()
-{
+void runSignalsComparison() {
     Serial0.println("{\"phase\":\"SIGNALS_COMPARISON_START\"}");
 
     SignalDef signals[3];
@@ -240,8 +224,7 @@ void runSignalsComparison()
     signals[2].components[1][1] = 45.0f;
 
     char buf[256];
-    for (int s = 0; s < 3; s++)
-    {
+    for (int s = 0; s < 3; s++) {
         FFTResult fft = runFFT(&signals[s]);
         float reduction = MAX_SAMPLE_RATE / fft.optimalSampleRate;
         float energySaving = (1.0f - 1.0f / reduction) * 100.0f;
@@ -262,8 +245,7 @@ void runSignalsComparison()
 
 // ======= SETUP & LOOP =======
 
-void setup()
-{
+void setup() {
     Serial0.begin(115200);
     delay(1000); // let serial stabilise
 
@@ -293,17 +275,15 @@ void setup()
 
     // --- Phase 5: Windowed average noisy unfiltered ---
     {
-        int totalSamples = (int)(fft.optimalSampleRate * WINDOW_SECS);
-        float* samples = (float*)malloc(totalSamples * sizeof(float));
+        int totalSamples = (int) (fft.optimalSampleRate * WINDOW_SECS);
+        float *samples = (float *) malloc(totalSamples * sizeof(float));
         char buf2[256];
 
         Serial0.println("{\"phase\":\"WINDOW_NOISY_START\"}");
-        for (int w = 0; w < NUM_WINDOWS; w++)
-        {
+        for (int w = 0; w < NUM_WINDOWS; w++) {
             uint64_t e2eStart = esp_timer_get_time();
             float sum = 0.0f;
-            for (int i = 0; i < totalSamples; i++)
-            {
+            for (int i = 0; i < totalSamples; i++) {
                 float t = i / fft.optimalSampleRate;
                 samples[i] = generateNoisySignal(t, noisyConfig, nullptr);
                 sum += samples[i];
@@ -331,8 +311,7 @@ void setup()
     Serial0.println("{\"phase\":\"DONE\"}");
 }
 
-void loop()
-{
+void loop() {
     // Everything runs once in setup()
     // Loop kept alive to prevent reset
     delay(10000);
