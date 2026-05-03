@@ -1,5 +1,4 @@
 #pragma once
-#include <arduinoFFT.h>
 
 struct FFTResult {
     float dominantFrequency; // Hz

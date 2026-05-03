@@ -1,10 +1,16 @@
 #include "fft.hpp"
 #include <Arduino.h>
+#include <arduinoFFT.h>
 
 static float fftReal[2048];
 static float fftImag[2048];
 
 FFTResult computeFFT(const float *samples, int size, float sampleRateHz) {
+    if (size > 2048) {
+        Serial.println("{\"phase\":\"FFT\",\"error\":\"size too big\"}");
+        return {0.0f, 0.0f};
+    }
+
     for (int i = 0; i < size; i++) {
         fftReal[i] = samples[i];
         fftImag[i] = 0.0f;

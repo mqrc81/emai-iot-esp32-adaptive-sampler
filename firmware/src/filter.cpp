@@ -38,6 +38,12 @@ static float computeMedian(float *data, int n) {
     free(sorted);
     return median;
 }
+static float computeMedian(const float *data, int n) {
+    float sorted[21];
+    memcpy(sorted, data, n * sizeof(float));
+    qsort(sorted, n, sizeof(float), floatCmp);
+    return (n % 2 == 0) ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0f : sorted[n / 2];
+}
 
 // --- Filter implementations ---
 
