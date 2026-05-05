@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/Users/ms/Projects/SAP/IOT/esp32-adaptive-sampler/build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
