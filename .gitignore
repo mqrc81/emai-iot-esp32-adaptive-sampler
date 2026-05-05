@@ -2,6 +2,7 @@
 .idea/
 cmake-build-*/
 .run/
+simulation/build
 
 # PlatformIO
 .pio/
