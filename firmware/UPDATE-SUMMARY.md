@@ -16,12 +16,12 @@ Heltec WiFi LoRa 32 V3
 INA219 wiring:
 
 ```
-INA219 VCC → Heltec 3.3V
-INA219 GND → Heltec GND
-INA219 SDA → GPIO17
-INA219 SCL → GPIO18
-INA219 VIN+ → USB power input
-INA219 VIN- → Heltec VIN (measures board current draw)
+Heltec Ve pin  → INA219 VIN+
+INA219 VIN-    → breadboard rail
+INA219 VCC     → Heltec 3V3
+INA219 GND     → Heltec GND
+INA219 SDA     → GPIO17
+INA219 SCL     → GPIO18
 ```
 
 ---
