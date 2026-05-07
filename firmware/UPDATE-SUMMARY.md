@@ -1,54 +1,62 @@
-## Hardware Setup
+## Updated Summary
+
+### Hardware Setup
 
 ```
-USB Power
-    ↓
-INA219 (I2C: SDA=GPIO17, SCL=GPIO18)
-    ↓ measures current/voltage/power
-Heltec WiFi LoRa 32 V3
-├── ESP32-S3 @ 240MHz
-├── SX1262 (internal, SPI: NSS=8, DIO1=14, RST=12, BUSY=13)
-├── WiFi (internal)
-├── OLED display (optional status)
-└── ADC pins (not used for signal — mathematical generation)
+Wall socket → USB-A charger → cut USB-A to USB-C cable
+                                      ↓
+                        Red wire → INA219 VIN+
+                        INA219 VIN- → Red wire → Heltec USB-C port
+                        Black wires joined directly
+                        Data wires (white/green) joined directly
+                                      ↓
+                              Heltec WiFi LoRa 32 V3.2
+                              ├── ESP32-S3 @ 240MHz
+                              ├── SX1262 (internal)
+                              ├── WiFi (internal)
+                              └── OLED display
 ```
 
-INA219 wiring:
+INA219 I2C wiring:
 
 ```
-Heltec Ve pin  → INA219 VIN+
-INA219 VIN-    → breadboard rail
-INA219 VCC     → Heltec 3V3
-INA219 GND     → Heltec GND
-INA219 SDA     → GPIO17
-INA219 SCL     → GPIO18
+INA219 VCC → Heltec 3V3
+INA219 GND → Heltec GND
+INA219 SDA → Heltec SDA
+INA219 SCL → Heltec SCL
+INA219 VIN+ → Red wire USB-A side (cut cable)
+INA219 VIN- → Red wire USB-C side (cut cable)
+330Ω resistor → REMOVED
 ```
+
+**What INA219 measures:** total board current including ESP32-S3 core, WiFi radio, SX1262 LoRa radio — everything
+powered by the USB input.
+
+**Workflow:**
+
+1. Flash firmware via laptop → USB-C to USB-C cable
+2. Disconnect laptop cable
+3. Connect cut cable through INA219 → wall socket for experiment
+4. All results published via MQTT over WiFi (no Serial during experiment)
+5. Reconnect laptop cable if Serial output needed
 
 ---
 
-## FreeRTOS Task Architecture
+### FreeRTOS Task Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    QUEUES                           │
-│  sampleQueue  → FFTTask                             │
-│  rateQueue    → SamplerTask (adaptive rate update)  │
-│  resultQueue  → CommTask                            │
-│  powerQueue   → CommTask (energy readings)          │
-└─────────────────────────────────────────────────────┘
-
 ┌─────────────────┐
 │  SamplerTask    │  Priority: 3 (highest)
-│  Stack: 4KB     │
+│  Stack: 12KB    │
 │                 │  - Generates signal mathematically
 │                 │  - Samples at current rate
 │                 │  - Fills FFT buffer (2048 samples)
 │                 │  - Sends buffer to FFTTask via queue
-│                 │  - Waits for adaptive rate from FFTTask
+│                 │  - Receives adaptive rate from FFTTask
 │                 │  - Fills window buffer (5s worth)
 │                 │  - Sends window to FilterTask
 └────────┬────────┘
-         │ xQueueSend(sampleQueue, buffer)
+         │ xQueueSend(sampleQueue)
          ▼
 ┌─────────────────┐
 │  FFTTask        │  Priority: 2
@@ -59,9 +67,8 @@ INA219 SCL     → GPIO18
 │                 │  - Identifies dominant frequency
 │                 │  - Computes adaptive rate (Nyquist)
 │                 │  - Sends rate back to SamplerTask
-│                 │  - Signals FilterTask to start window
 └────────┬────────┘
-         │ xQueueSend(rateQueue, adaptiveRate)
+         │ xQueueSend(rateQueue)
          ▼
 ┌─────────────────┐
 │  FilterTask     │  Priority: 2
@@ -72,7 +79,7 @@ INA219 SCL     → GPIO18
 │                 │  - Records NTP timestamp
 │                 │  - Sends result to CommTask
 └────────┬────────┘
-         │ xQueueSend(resultQueue, result)
+         │ xQueueSend(resultQueue)
          ▼
 ┌─────────────────┐
 │  CommTask       │  Priority: 1
@@ -90,35 +97,33 @@ INA219 SCL     → GPIO18
 │                 │  - Reads INA219 every 100ms
 │                 │  - Logs current/voltage/power
 │                 │  - Accumulates energy per phase
-│                 │  - Sends readings to CommTask
+│                 │  - Publishes via MQTT
 └─────────────────┘
 ```
 
 ---
 
-## Inter-Task Communication
+### Inter-Task Communication
 
 ```cpp
-// Queue definitions
-QueueHandle_t sampleQueue;  // SamplerTask → FFTTask: float buffer
-QueueHandle_t rateQueue;    // FFTTask → SamplerTask: float (adaptive rate)
-QueueHandle_t windowQueue;  // SamplerTask → FilterTask: float buffer
-QueueHandle_t resultQueue;  // FilterTask → CommTask: WindowResult struct
-QueueHandle_t powerQueue;   // MonitorTask → CommTask: PowerReading struct
+QueueHandle_t sampleQueue;  // SamplerTask → FFTTask
+QueueHandle_t rateQueue;    // FFTTask → SamplerTask
+QueueHandle_t windowQueue;  // SamplerTask → FilterTask
+QueueHandle_t resultQueue;  // FilterTask → CommTask
+QueueHandle_t powerQueue;   // MonitorTask → CommTask
 
-// Structs passed through queues
 struct WindowResult {
-    float    average;
-    float    adaptiveRate;
-    int      sampleCount;
-    float    computeMs;
-    int64_t  timestampUs;   // NTP Unix time in microseconds
-    int      signalIndex;   // which of 3 signals
-    int      filterType;    // 0=none, 1=zscore, 2=hampel
-    float    anomalyProb;   // injection rate
-    float    tpr;
-    float    fpr;
-    float    meanError;
+    float   average;
+    float   adaptiveRate;
+    int     sampleCount;
+    float   computeMs;
+    int64_t timestampUs;    // NTP Unix time microseconds
+    int     signalIndex;    // which of 3 signals
+    int     filterType;     // 0=none, 1=zscore, 2=hampel
+    float   anomalyProb;    // injection rate
+    float   tpr;
+    float   fpr;
+    float   meanError;
 };
 
 struct PowerReading {
@@ -126,17 +131,16 @@ struct PowerReading {
     float voltageV;
     float powerMw;
     float energyMj;         // accumulated since phase start
-    char  phase[32];        // "OVERSAMPLE", "ADAPTIVE", "IDLE" etc
+    char  phase[32];        // "BENCHMARK", "ADAPTIVE", "FFT" etc
 };
 ```
 
 ---
 
-## Experiment Phases
+### Experiment Phases
 
 **Phase 0 — Initialisation**
 
-- `Serial.begin(115200)` — debug output
 - INA219 init via I2C
 - WiFi connect → NTP sync → MQTT connect
 - SX1262 init via RadioLib
@@ -146,18 +150,17 @@ struct PowerReading {
 
 **Phase 1 — Max Rate Benchmark**
 
-- SamplerTask runs tight loop, no delays
-- MonitorTask tags phase as "BENCHMARK"
+- SamplerTask tight loop, no delays
+- MonitorTask tags phase "BENCHMARK"
 - Records achieved Hz via `esp_timer_get_time()`
-- Records real power draw at max rate
-- Duration: 10000 samples
+- Records real power draw at max rate via INA219
 
 **Phase 2 — FFT & Adaptive Rate**
 
 - SamplerTask collects 2048 samples at 1000Hz
 - FFTTask processes → dominant frequency → adaptive rate
-- Result published via MQTT and LoRaWAN
 - MonitorTask logs power during FFT computation
+- Result published via MQTT
 
 **Phase 3 — Windowed Average (clean signal)**
 
@@ -174,6 +177,8 @@ struct PowerReading {
   "sample_count": 48,
   "compute_ms": 0.004,
   "timestamp_us": 1714915200000000,
+  "current_ma": 45.2,
+  "power_mw": 149.2,
   "energy_mj": 12.4
 }
 ```
@@ -184,15 +189,13 @@ struct PowerReading {
 **Phase 4 — Noisy Signal, Multiple Injection Rates**
 
 - Repeat for p = 1%, 5%, 10%
-- For each: Z-score filter then Hampel filter
+- Z-score filter then Hampel filter
 - TPR/FPR computed against known ground truth
-- Results published per window
 
 **Phase 5 — Window Size Trade-off**
 
-- W = 5, 11, 21, 51, 101, 201
-- At p = 5%
-- Execution time measured via `esp_timer_get_time()`
+- W = 5, 11, 21, 51, 101, 201 at p = 5%
+- Execution time via `esp_timer_get_time()`
 - Memory usage logged (W × 4 bytes)
 
 **Phase 6 — Three Signals Comparison**
@@ -200,41 +203,40 @@ struct PowerReading {
 - Signal 1: `2sin(2π·3t) + 4sin(2π·5t)` (baseline)
 - Signal 2: `4sin(2π·2t)` (low frequency)
 - Signal 3: `2sin(2π·10t) + 3sin(2π·45t)` (high frequency)
-- Full FFT + adaptive rate + windowed average for each
-- Energy measured per signal
+- Full FFT + adaptive rate + windowed average + INA219 energy per signal
 
-**Phase 7 — LoRaWAN Duty Cycle Validation**
+**Phase 7 — LoRaWAN at library (TTN coverage)**
 
-- Count actual uplinks sent
-- Log airtime per packet
-- Compare against TTN fair use limit
-
----
-
-## Changes from Current Firmware
-
-| Component        | Current (`main.cpp`)                        | New                                   |
-|------------------|---------------------------------------------|---------------------------------------|
-| Architecture     | Sequential in `setup()`                     | FreeRTOS tasks with queues            |
-| Board            | `arduino_nano_esp32` / `esp32-s3-devkitc-1` | `heltec_wifi_lora_32_V3`              |
-| Signal source    | Mathematical                                | Mathematical (unchanged)              |
-| FFT library      | arduinoFFT                                  | arduinoFFT (unchanged)                |
-| FFT buffers      | Stack allocated                             | Heap allocated via `heap_caps_malloc` |
-| Task stack sizes | N/A                                         | Explicitly set per task               |
-| Energy           | Calculated ratio                            | Real INA219 readings                  |
-| MQTT             | Not implemented                             | PubSubClient over WiFi                |
-| LoRaWAN          | Stubbed                                     | Real SX1262 → TTN via RadioLib        |
-| Timestamps       | Boot-relative                               | NTP Unix time                         |
-| Max sample rate  | Derived                                     | Measured in benchmark loop            |
-| OLED             | Not used                                    | Optional live status display          |
-| Pin mapping      | Nano ESP32                                  | Heltec V3 known pins                  |
+- Travel to location with TTN gateway coverage
+- Same firmware, different WiFi credentials in config.h
+- Real OTAA join + uplink
+- Confirm receipt in TTN console
 
 ---
 
-## Key Constants in `config.h`
+### Changes from Current Firmware
+
+| Component         | Current                 | New                               |
+|-------------------|-------------------------|-----------------------------------|
+| Board             | `esp32-s3-devkitc-1`    | `heltec_wifi_lora_32_V3`          |
+| Architecture      | Sequential in `setup()` | FreeRTOS tasks with queues        |
+| Signal source     | Mathematical            | Mathematical (unchanged)          |
+| FFT buffers       | Stack allocated         | Heap via `heap_caps_malloc`       |
+| Task stack sizes  | N/A                     | Explicitly set per task           |
+| Energy            | Calculated ratio        | Real INA219 — total board current |
+| MQTT              | Not implemented         | PubSubClient over WiFi            |
+| LoRaWAN           | Stubbed                 | Real SX1262 → TTN via RadioLib    |
+| Timestamps        | Boot-relative           | NTP Unix time                     |
+| Max sample rate   | Derived                 | Measured in benchmark loop        |
+| OLED              | Not used                | Optional live status              |
+| RadioLib conflict | pin remap error         | Resolved via correct board target |
+
+---
+
+### config.h Constants
 
 ```cpp
-// Heltec WiFi LoRa 32 V3 SX1262 pins
+// Heltec WiFi LoRa 32 V3.2 SX1262 pins
 #define LORA_NSS    8
 #define LORA_DIO1  14
 #define LORA_RESET 12
@@ -244,8 +246,22 @@ struct PowerReading {
 #define LORA_MISO  11
 
 // INA219 I2C pins
-#define INA219_SDA 17
-#define INA219_SCL 18
+#define INA219_SDA  17
+#define INA219_SCL  18
+
+// WiFi (update per location)
+#define WIFI_SSID     "your_ssid" // TODO
+#define WIFI_PASSWORD "your_password" // TODO
+
+// MQTT
+#define MQTT_HOST  "mac_local_ip"
+#define MQTT_PORT  1883
+#define MQTT_TOPIC "iot/window"
+
+// TTN
+#define TTN_DEV_EUI  "0000000000000000"
+#define TTN_APP_EUI  "0000000000000000"
+#define TTN_APP_KEY  "00000000000000000000000000000000"
 
 // Experiment
 #define MAX_SAMPLE_RATE    1000.0f
@@ -259,12 +275,3 @@ struct PowerReading {
 ```
 
 ---
-
-## Open Questions Before Writing Code
-
-1. **INA219 wiring** — do you have the breakout board with VIN+/VIN- terminals, or just the chip?
-2. **TTN keys** — DevEUI/AppEUI/AppKey from TTN console
-3. **Home WiFi SSID/password** for MQTT phase
-4. **Library WiFi SSID/password** for LoRaWAN phase
-5. **Heltec V3 pin confirmation** — the pin mapping above is from the datasheet you shared earlier, but worth
-   double-checking against the Heltec library
