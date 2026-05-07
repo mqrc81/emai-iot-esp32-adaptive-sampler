@@ -154,13 +154,15 @@ struct PowerReading {
 - MonitorTask tags phase "BENCHMARK"
 - Records achieved Hz via `esp_timer_get_time()`
 - Records real power draw at max rate via INA219
+- CommTask publishes per-benchmark result via MQTT
 
 **Phase 2 — FFT & Adaptive Rate**
 
 - SamplerTask collects 2048 samples at 1000Hz
 - FFTTask processes → dominant frequency → adaptive rate
 - MonitorTask logs power during FFT computation
-- Result published via MQTT
+- CommTask publishes FFT result via MQTT
+- CommTask sends summary (dominant freq, adaptive rate, reduction factor) via LoRaWAN
 
 **Phase 3 — Windowed Average (clean signal)**
 
@@ -183,7 +185,7 @@ struct PowerReading {
 }
 ```
 
-- CommTask sends Cayenne LPP uplink via LoRaWAN
+- CommTask sends per-signal summary via LoRaWAN
 - E2E latency = Mac receipt time - `timestamp_us`
 
 **Phase 4 — Noisy Signal, Multiple Injection Rates**
@@ -191,12 +193,16 @@ struct PowerReading {
 - Repeat for p = 1%, 5%, 10%
 - Z-score filter then Hampel filter
 - TPR/FPR computed against known ground truth
+- CommTask publishes per-window detail for all combinations via MQTT
+- CommTask sends per-injection rate summary via LoRaWAN
 
 **Phase 5 — Window Size Trade-off**
 
 - W = 5, 11, 21, 51, 101, 201 at p = 5%
 - Execution time via `esp_timer_get_time()`
 - Memory usage logged (W × 4 bytes)
+- CommTask publishes per-window size result via MQTT
+- CommTask sends summary via LoRaWAN
 
 **Phase 6 — Three Signals Comparison**
 
@@ -204,13 +210,7 @@ struct PowerReading {
 - Signal 2: `4sin(2π·2t)` (low frequency)
 - Signal 3: `2sin(2π·10t) + 3sin(2π·45t)` (high frequency)
 - Full FFT + adaptive rate + windowed average + INA219 energy per signal
-
-**Phase 7 — LoRaWAN at library (TTN coverage)**
-
-- Travel to location with TTN gateway coverage
-- Same firmware, different WiFi credentials in config.h
-- Real OTAA join + uplink
-- Confirm receipt in TTN console
+- CommTask publishes per-window detail via MQTT
 
 ---
 
