@@ -14,7 +14,7 @@
 
 // ======= TTN / LORAWAN =======
 #define TTN_DEV_EUI 0x0000000000000000ULL // TODO
-#define TTN_APP_EUI 0x0000000000000000ULL // TODO
+#define TTN_JOIN_EUI 0x0000000000000000ULL // TODO
 // Bytes from TTN console (MSB first)
 #define TTN_APP_KEY { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } // TODO
 #define LORA_FREQ   868.0

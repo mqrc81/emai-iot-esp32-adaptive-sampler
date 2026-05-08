@@ -39,7 +39,7 @@ bool loraJoin() {
     uint8_t appKey[] = TTN_APP_KEY;
 
     // beginOTAA sets up keys — does not block
-    int state = s_node->beginOTAA(TTN_APP_EUI, TTN_DEV_EUI, nullptr, appKey);
+    int state = s_node->beginOTAA(TTN_JOIN_EUI, TTN_DEV_EUI, nullptr, appKey);
     if (state != RADIOLIB_ERR_NONE) {
         logFmt("[LORA] OTAA join failed code=%d — continuing without LoRa", state);
         return false;
