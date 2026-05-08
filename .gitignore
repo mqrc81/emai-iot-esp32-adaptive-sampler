@@ -11,3 +11,5 @@ simulation/build
 .DS_Store
 
 iot-lab-ca.pem
+
+esp32/src/config.hpp

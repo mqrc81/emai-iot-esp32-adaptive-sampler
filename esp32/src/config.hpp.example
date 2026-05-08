@@ -1,33 +1,27 @@
 #pragma once
 
 // ======= WIFI =======
-#define WIFI_SSID     "your_ssid"
-#define WIFI_PASSWORD "your_password"
+#define WIFI_SSID     "" // TODO
+#define WIFI_PASSWORD "" // TODO
 
 // ======= MQTT =======
-#define MQTT_HOST     "192.168.1.127"  // Mac's IP (ipconfig getifaddr en0)
+#define MQTT_HOST     "192.168.x.x"  // TODO
 #define MQTT_PORT     1883
 #define MQTT_TOPIC    "iot/window"
 #define MQTT_CLIENT   "heltec-adaptive-sampler"
+#define MQTT_USER  ""   // TODO
+#define MQTT_PASS  ""   // TODO
 
 // ======= TTN / LORAWAN =======
-#define TTN_DEV_EUI   "0000000000000000"
-#define TTN_APP_EUI   "0000000000000000"
-#define TTN_APP_KEY   "00000000000000000000000000000000"
-#define LORA_FREQ     868.0  // EU868
-
-// ======= SX1262 PINS (Heltec WiFi LoRa 32 V3.2) =======
-#define LORA_NSS      8
-#define LORA_DIO1     14
-#define LORA_RESET    12
-#define LORA_BUSY     13
-#define LORA_SCK      9
-#define LORA_MOSI     10
-#define LORA_MISO     11
+#define TTN_DEV_EUI 0x0000000000000000ULL // TODO
+#define TTN_APP_EUI 0x0000000000000000ULL // TODO
+// Bytes from TTN console (MSB first)
+#define TTN_APP_KEY { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } // TODO
+#define LORA_FREQ   868.0
 
 // ======= INA219 I2C PINS =======
-#define INA219_SDA    17
-#define INA219_SCL    18
+#define INA219_SDA  41   // J3 pin 8
+#define INA219_SCL  42   // J3 pin 7
 
 // ======= EXPERIMENT =======
 #define MAX_SAMPLE_RATE     1000.0f

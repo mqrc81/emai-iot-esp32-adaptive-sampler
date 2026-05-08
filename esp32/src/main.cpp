@@ -1,10 +1,577 @@
 #include <Arduino.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <Wire.h>
+#include <WiFi.h>
+#include <ctime>
+#include <cstring>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/queue.h>
+#include <heltec_unofficial.h>
+#include "config.hpp"
+#include "logger.hpp"
+#include "signal.hpp"
+#include "fft.hpp"
+#include "filter.hpp"
+#include "power.hpp"
+#include "mqtt_client.hpp"
+#include "lorawan_client.hpp"
 
+// ======= SERIAL MUTEX =======
+SemaphoreHandle_t serialMutex = nullptr;
+static SemaphoreHandle_t s_phaseMutex = nullptr;
+
+// ======= QUEUES =======
+static QueueHandle_t s_sampleQueue = nullptr; // SamplerTask → FFTTask
+static QueueHandle_t s_rateQueue = nullptr; // FFTTask → SamplerTask
+static QueueHandle_t s_windowQueue = nullptr; // SamplerTask → FilterTask
+static QueueHandle_t s_resultQueue = nullptr; // FilterTask → CommTask
+static QueueHandle_t s_powerQueue = nullptr; // MonitorTask → CommTask
+
+// ======= SHARED EXPERIMENT STATE =======
+static char s_currentPhase[32] = "INIT";
+static volatile bool s_experimentDone = false;
+
+// ======= STRUCTS =======
+struct SampleBuffer {
+    float *data;
+    int size;
+    float sampleRate;
+};
+
+struct WindowBuffer {
+    float *data;
+    int *groundTruth;
+    int size;
+    float sampleRate;
+    float adaptiveRate;
+    int signalIndex;
+    int filterType; // 0=none, 1=zscore, 2=hampel
+    float anomalyProb;
+    int windowIndex;
+};
+
+// ======= HELPERS =======
+static int64_t nowUs() {
+    timeval tv{};
+    gettimeofday(&tv, nullptr);
+    return (int64_t) tv.tv_sec * 1000000LL + tv.tv_usec;
+}
+
+static void setPhase(const char *phase) {
+    if (xSemaphoreTake(s_phaseMutex, pdMS_TO_TICKS(100))) {
+        strncpy(s_currentPhase, phase, sizeof(s_currentPhase) - 1);
+        s_currentPhase[sizeof(s_currentPhase) - 1] = '\0';
+        xSemaphoreGive(s_phaseMutex);
+    }
+    logFmt("[PHASE] %s", phase);
+}
+
+// ======= WIFI =======
+static void connectWiFi() {
+    logFmt("[WIFI] connecting to %s", WIFI_SSID);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED && retries < 20) {
+        vTaskDelay(pdMS_TO_TICKS(500));
+        retries++;
+    }
+    if (WiFi.status() == WL_CONNECTED) {
+        logFmt("[WIFI] connected ip=%s", WiFi.localIP().toString().c_str());
+    } else {
+        logMsg("[WIFI] failed — continuing without MQTT");
+    }
+}
+
+static void syncNTP() {
+    if (WiFi.status() != WL_CONNECTED) return;
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+    logMsg("[NTP] syncing...");
+    time_t now = 0;
+    int retries = 0;
+    while (now < 1000000000L && retries < 20) {
+        vTaskDelay(pdMS_TO_TICKS(500));
+        now = time(nullptr);
+        retries++;
+    }
+    if (now > 1000000000L)
+        logFmt("[NTP] synced unix=%lld", (long long) now);
+    else
+        logMsg("[NTP] sync failed");
+}
+
+// ======= MONITOR TASK =======
+static void monitorTask(void *param) {
+    for (;;) {
+        if (s_experimentDone) vTaskDelete(nullptr);
+        char phase[32];
+        if (xSemaphoreTake(s_phaseMutex, pdMS_TO_TICKS(100))) {
+            strncpy(phase, s_currentPhase, sizeof(phase));
+            xSemaphoreGive(s_phaseMutex);
+        }
+        PowerReading r = powerRead(phase);
+        xQueueOverwrite(s_powerQueue, &r);
+        vTaskDelay(pdMS_TO_TICKS(INA219_POLL_MS));
+    }
+}
+
+// ======= COMM TASK =======
+static void commTask(void *param) {
+    for (;;) {
+        if (s_experimentDone) {
+            mqttLoop();
+            vTaskDelay(pdMS_TO_TICKS(100));
+            continue;
+        }
+
+        WindowResult r{};
+        // Block up to 5s waiting for result — then loop for keepalive
+        if (xQueueReceive(s_resultQueue, &r, pdMS_TO_TICKS(5000))) {
+            PowerReading power = {};
+            xQueueReceive(s_powerQueue, &power, pdMS_TO_TICKS(100));
+
+            mqttEnsureConnected(MQTT_USER, MQTT_PASS);
+            mqttPublishWindow(r, power);
+        }
+
+        mqttEnsureConnected(MQTT_USER, MQTT_PASS);
+        mqttLoop();
+    }
+}
+
+// ======= FILTER TASK =======
+static void filterTask(void *param) {
+    for (;;) {
+        WindowBuffer wb{};
+        if (xQueueReceive(s_windowQueue, &wb, portMAX_DELAY) != pdTRUE) continue;
+
+        uint64_t computeStart = esp_timer_get_time();
+
+        int half = FILTER_WINDOW / 2;
+        int tp = 0, fp = 0, fn = 0, tn = 0;
+        float totalError = 0.0f;
+        float sum = 0.0f;
+        int counted = 0;
+
+        for (int i = 0; i < wb.size; i++) {
+            float cleaned;
+            int flagged = 0;
+
+            if (i >= half && i < wb.size - half) {
+                const float *window = &wb.data[i - half];
+                FilterResult fr{};
+
+                if (wb.filterType == 1)
+                    fr = zscoreFilter(window, FILTER_WINDOW, half, ZSCORE_THRESH);
+                else if (wb.filterType == 2)
+                    fr = hampelFilter(window, FILTER_WINDOW, half, HAMPEL_THRESH);
+                else
+                    fr = {0, wb.data[i]};
+
+                cleaned = fr.cleaned;
+                flagged = fr.flagged;
+
+                // Confusion matrix (only meaningful for noisy signal)
+                if (wb.groundTruth) {
+                    int gt = wb.groundTruth[i];
+                    if (gt == 1 && flagged == 1) tp++;
+                    if (gt == 0 && flagged == 1) fp++;
+                    if (gt == 1 && flagged == 0) fn++;
+                    if (gt == 0 && flagged == 0) tn++;
+                }
+
+                // Error vs clean signal
+                float trueVal = generateSignal(i / wb.adaptiveRate, SIGNAL_1);
+                totalError += fabsf(cleaned - trueVal);
+                counted++;
+            } else {
+                cleaned = wb.data[i];
+            }
+            sum += cleaned;
+        }
+
+        float computeMs = (esp_timer_get_time() - computeStart) / 1000.0f;
+        float average = sum / wb.size;
+        int evaluated = counted > 0 ? counted : 1;
+
+        WindowResult result{};
+        result.average = average;
+        result.adaptiveRate = wb.adaptiveRate;
+        result.sampleCount = wb.size;
+        result.computeMs = computeMs;
+        result.timestampUs = nowUs();
+        result.signalIndex = wb.signalIndex;
+        result.filterType = wb.filterType;
+        result.anomalyProb = wb.anomalyProb;
+        result.tpr = (float) tp / (tp + fn + 1e-6f);
+        result.fpr = (float) fp / (fp + tn + 1e-6f);
+        result.meanError = totalError / evaluated;
+        result.tp = tp;
+        result.fp = fp;
+        result.fn = fn;
+        result.tn = tn;
+
+        xQueueSend(s_resultQueue, &result, portMAX_DELAY);
+
+        // Free buffers allocated by SamplerTask
+        free(wb.data);
+        if (wb.groundTruth) free(wb.groundTruth);
+    }
+}
+
+// ======= FFT TASK =======
+static void fftTask(void *param) {
+    for (;;) {
+        SampleBuffer sb{};
+        if (xQueueReceive(s_sampleQueue, &sb, portMAX_DELAY) != pdTRUE) continue;
+
+        setPhase("FFT");
+        FFTResult fft = computeFFT(sb.data, sb.size, sb.sampleRate);
+        free(sb.data);
+
+        if (fft.dominantFrequency == 0.0f) {
+            logMsg("[FFT] failed — keeping current rate");
+            continue;
+        }
+
+        logFmt("[FFT] dominant=%.2fHz adaptive=%.2fHz reduction=%.1fx",
+               fft.dominantFrequency,
+               fft.optimalSampleRate,
+               sb.sampleRate / fft.optimalSampleRate);
+
+        // Send adaptive rate back to SamplerTask
+        xQueueSend(s_rateQueue, &fft.optimalSampleRate, portMAX_DELAY);
+
+        // LoRaWAN summary uplink for FFT phase
+        loraSendSummary(fft.dominantFrequency, "FFT");
+    }
+}
+
+// ======= SAMPLER TASK =======
+// Runs the full experiment sequentially
+static void samplerTask(void *param) {
+    float adaptiveRate = MAX_SAMPLE_RATE;
+
+    // ===== PHASE 1: BENCHMARK MAX RATE =====
+    setPhase("BENCHMARK");
+    powerResetEnergy();
+
+    uint64_t benchStart = esp_timer_get_time();
+    volatile float sink = 0.0f;
+    for (int i = 0; i < BENCHMARK_SAMPLES; i++) {
+        float t = i / MAX_SAMPLE_RATE;
+        sink = generateSignal(t, SIGNAL_1);
+    }
+    float benchElapsedS = (esp_timer_get_time() - benchStart) / 1e6f;
+    float achievedRateHz = BENCHMARK_SAMPLES / benchElapsedS;
+    logFmt("[BENCH] achieved=%.2fHz elapsed=%.4fs", achievedRateHz, benchElapsedS);
+
+    // Publish benchmark result
+    WindowResult benchResult = {};
+    benchResult.adaptiveRate = achievedRateHz;
+    benchResult.computeMs = benchElapsedS * 1000.0f;
+    benchResult.timestampUs = nowUs();
+    xQueueSend(s_resultQueue, &benchResult, portMAX_DELAY);
+
+    // ===== PHASE 2: FFT → ADAPTIVE RATE =====
+    setPhase("FFT_COLLECT");
+    {
+        float *buf = (float *) malloc(FFT_SIZE * sizeof(float));
+        if (!buf) {
+            logMsg("[SAMPLER] FFT malloc failed");
+            vTaskDelete(nullptr);
+        }
+
+        for (int i = 0; i < FFT_SIZE; i++)
+            buf[i] = generateSignal(i / MAX_SAMPLE_RATE, SIGNAL_1);
+
+        SampleBuffer sb = {buf, FFT_SIZE, MAX_SAMPLE_RATE};
+        xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
+
+        // Wait for adaptive rate from FFTTask
+        xQueueReceive(s_rateQueue, &adaptiveRate, portMAX_DELAY);
+        logFmt("[SAMPLER] adaptive rate set to %.2fHz", adaptiveRate);
+        loraSendSummary(adaptiveRate, "FFT_BASELINE");
+    }
+
+    // ===== PHASES 3 & 6: THREE SIGNALS — CLEAN WINDOWED AVERAGE =====
+    for (int sigIdx = 0; sigIdx < 3; sigIdx++) {
+        const SignalDef &sig = *ALL_SIGNALS[sigIdx];
+        setPhase("WINDOW_CLEAN");
+        powerResetEnergy();
+
+        // Run FFT for this signal to get its adaptive rate
+        float *fftBuf = (float *) malloc(FFT_SIZE * sizeof(float));
+        if (!fftBuf) {
+            logMsg("[SAMPLER] FFT malloc failed");
+            continue;
+        }
+        for (int i = 0; i < FFT_SIZE; i++)
+            fftBuf[i] = generateSignal(i / MAX_SAMPLE_RATE, sig);
+        SampleBuffer sb = {fftBuf, FFT_SIZE, MAX_SAMPLE_RATE};
+        xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
+
+        float sigAdaptiveRate = MAX_SAMPLE_RATE;
+        xQueueReceive(s_rateQueue, &sigAdaptiveRate, portMAX_DELAY);
+        logFmt("[SAMPLER] signal %d adaptive=%.2fHz", sigIdx, sigAdaptiveRate);
+
+        char loraLabel[32];
+        snprintf(loraLabel, sizeof(loraLabel), "SIG%d_FFT", sigIdx);
+        loraSendSummary(sigAdaptiveRate, loraLabel);
+
+        int totalSamples = (int) (sigAdaptiveRate * WINDOW_SECS);
+
+        for (int w = 0; w < NUM_WINDOWS; w++) {
+            float *winBuf = (float *) malloc(totalSamples * sizeof(float));
+            if (!winBuf) {
+                logMsg("[SAMPLER] window malloc failed");
+                continue;
+            }
+
+            for (int i = 0; i < totalSamples; i++)
+                winBuf[i] = generateSignal(i / sigAdaptiveRate, sig);
+
+            WindowBuffer wb = {};
+            wb.data = winBuf;
+            wb.groundTruth = nullptr;
+            wb.size = totalSamples;
+            wb.sampleRate = MAX_SAMPLE_RATE;
+            wb.adaptiveRate = sigAdaptiveRate;
+            wb.signalIndex = sigIdx;
+            wb.filterType = 0; // no filter
+            wb.anomalyProb = 0.0f;
+            wb.windowIndex = w;
+
+            xQueueSend(s_windowQueue, &wb, portMAX_DELAY);
+        }
+
+        // LoRaWAN summary per signal
+        loraSendSummary(sigAdaptiveRate, sig.name);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+    // ===== PHASE 4: NOISY SIGNAL — MULTIPLE INJECTION RATES =====
+    float anomalyProbs[] = {0.01f, 0.05f, 0.10f};
+    int filterTypes[] = {1, 2}; // 1=zscore, 2=hampel
+
+    for (float prob: anomalyProbs) {
+        SignalConfig noisyCfg = DEFAULT_NOISY_CONFIG;
+        noisyCfg.anomalyProb = prob;
+
+        char phaseLabel[32];
+        snprintf(phaseLabel, sizeof(phaseLabel), "NOISY_p%.0f", prob * 100);
+        setPhase(phaseLabel);
+        powerResetEnergy();
+
+        int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+
+        for (int filterType: filterTypes) {
+            for (int w = 0; w < NUM_WINDOWS; w++) {
+                float *winBuf = (float *) malloc(totalSamples * sizeof(float));
+                int *gt = (int *) malloc(totalSamples * sizeof(int));
+                if (!winBuf || !gt) {
+                    free(winBuf);
+                    free(gt);
+                    logMsg("[SAMPLER] noisy malloc failed");
+                    continue;
+                }
+
+                for (int i = 0; i < totalSamples; i++)
+                    winBuf[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &gt[i]);
+
+                WindowBuffer wb = {};
+                wb.data = winBuf;
+                wb.groundTruth = gt;
+                wb.size = totalSamples;
+                wb.sampleRate = MAX_SAMPLE_RATE;
+                wb.adaptiveRate = adaptiveRate;
+                wb.signalIndex = 0; // Signal 1 only for noisy
+                wb.filterType = filterType;
+                wb.anomalyProb = prob;
+                wb.windowIndex = w;
+
+                xQueueSend(s_windowQueue, &wb, portMAX_DELAY);
+            }
+        }
+
+        // LoRaWAN summary per injection rate
+        loraSendSummary(prob, phaseLabel);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+    // ===== PHASE 5: WINDOW SIZE TRADE-OFF =====
+    setPhase("WINDOW_TRADEOFF");
+    powerResetEnergy();
+    {
+        int windowSizes[] = {5, 11, 21, 51, 101, 201};
+        int nSizes = 6;
+        float prob = 0.05f;
+
+        SignalConfig noisyCfg = DEFAULT_NOISY_CONFIG;
+        noisyCfg.anomalyProb = prob;
+
+        int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+        float *samples = (float *) malloc(totalSamples * sizeof(float));
+        int *gt = (int *) malloc(totalSamples * sizeof(int));
+
+        if (!samples || !gt) {
+            logMsg("[SAMPLER] tradeoff malloc failed");
+            free(samples);
+            free(gt);
+            goto done;
+        }
+
+        for (int i = 0; i < totalSamples; i++)
+            samples[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &gt[i]);
+
+        for (int wi = 0; wi < nSizes; wi++) {
+            int W = windowSizes[wi];
+            int half = W / 2;
+
+            // Z-score
+            {
+                int tp = 0, fp = 0, fn = 0, tn = 0;
+                float totalError = 0.0f;
+                uint64_t start = esp_timer_get_time();
+
+                for (int i = half; i < totalSamples - half; i++) {
+                    FilterResult fr = zscoreFilter(&samples[i - half], W, half, ZSCORE_THRESH);
+                    int g = gt[i];
+                    if (g == 1 && fr.flagged == 1) tp++;
+                    if (g == 0 && fr.flagged == 1) fp++;
+                    if (g == 1 && fr.flagged == 0) fn++;
+                    if (g == 0 && fr.flagged == 0) tn++;
+                    float trueVal = generateSignal(i / adaptiveRate, SIGNAL_1);
+                    totalError += fabsf(fr.cleaned - trueVal);
+                }
+
+                float timeMs = (esp_timer_get_time() - start) / 1000.0f;
+                int evaluated = totalSamples - 2 * half;
+                float tpr = (float) tp / (tp + fn + 1e-6f);
+                float fpr = (float) fp / (fp + tn + 1e-6f);
+                float meanErr = totalError / evaluated;
+
+                WindowResult r = {};
+                r.adaptiveRate = (float) W; // reuse field for window size W
+                r.computeMs = timeMs;
+                r.timestampUs = nowUs();
+                r.signalIndex = -1; // sentinel for trade-off phase
+                r.filterType = 1;
+                r.anomalyProb = prob;
+                r.tpr = tpr;
+                r.fpr = fpr;
+                r.meanError = meanErr;
+                r.sampleCount = W * (int) sizeof(float); // reuse field for memory bytes (W * sizeof(float))
+                r.tp = tp;
+                r.fp = fp;
+                r.fn = fn;
+                r.tn = tn;
+                xQueueSend(s_resultQueue, &r, portMAX_DELAY);
+            }
+
+            // Hampel
+            {
+                int tp = 0, fp = 0, fn = 0, tn = 0;
+                float totalError = 0.0f;
+                uint64_t start = esp_timer_get_time();
+
+                for (int i = half; i < totalSamples - half; i++) {
+                    FilterResult fr = hampelFilter(&samples[i - half], W, half, HAMPEL_THRESH);
+                    int g = gt[i];
+                    if (g == 1 && fr.flagged == 1) tp++;
+                    if (g == 0 && fr.flagged == 1) fp++;
+                    if (g == 1 && fr.flagged == 0) fn++;
+                    if (g == 0 && fr.flagged == 0) tn++;
+                    float trueVal = generateSignal(i / adaptiveRate, SIGNAL_1);
+                    totalError += fabsf(fr.cleaned - trueVal);
+                }
+
+                float timeMs = (esp_timer_get_time() - start) / 1000.0f;
+                int evaluated = totalSamples - 2 * half;
+                float tpr = (float) tp / (tp + fn + 1e-6f);
+                float fpr = (float) fp / (fp + tn + 1e-6f);
+                float meanErr = totalError / evaluated;
+
+                WindowResult r = {};
+                r.adaptiveRate = (float) W;
+                r.computeMs = timeMs;
+                r.timestampUs = nowUs();
+                r.signalIndex = -1;
+                r.filterType = 2;
+                r.anomalyProb = prob;
+                r.tpr = tpr;
+                r.fpr = fpr;
+                r.meanError = meanErr;
+                r.sampleCount = W * (int) sizeof(float);
+                r.tp = tp;
+                r.fp = fp;
+                r.fn = fn;
+                r.tn = tn;
+                xQueueSend(s_resultQueue, &r, portMAX_DELAY);
+            }
+        }
+
+        free(samples);
+        free(gt);
+
+        // LoRaWAN summary for trade-off phase
+        loraSendSummary(21.0f, "TRADEOFF_BEST_W");
+    }
+
+done:
+    s_experimentDone = true;
+    logMsg("[SAMPLER] experiment complete");
+    vTaskDelete(nullptr);
+}
+
+// ======= SETUP =======
 void setup() {
-    Serial.begin(115200);
-    Serial.println("BOOT OK");
+    heltec_setup(); // initialises radio, must be first
+    heltec_ve(true);
+    delay(1000);
+
+    serialMutex = xSemaphoreCreateMutex();
+    s_phaseMutex = xSemaphoreCreateMutex();
+
+    logMsg("[BOOT] starting...");
+
+    // I2C for INA219 — before powerInit
+    Wire.begin(INA219_SDA, INA219_SCL);
+    bool powerOk = powerInit();
+    if (!powerOk) logMsg("[BOOT] INA219 not found — continuing without power measurement");
+
+    // WiFi + NTP
+    connectWiFi();
+    syncNTP();
+
+    // MQTT
+    mqttInit(MQTT_HOST, MQTT_PORT, MQTT_CLIENT);
+    mqttEnsureConnected(MQTT_USER, MQTT_PASS);
+
+    // LoRa
+    loraInit();
+    loraJoin(); // blocks until joined or fails
+
+    // Create queues
+    s_sampleQueue = xQueueCreate(1, sizeof(SampleBuffer));
+    s_rateQueue = xQueueCreate(1, sizeof(float));
+    s_windowQueue = xQueueCreate(2, sizeof(WindowBuffer));
+    s_resultQueue = xQueueCreate(8, sizeof(WindowResult));
+    s_powerQueue = xQueueCreate(1, sizeof(PowerReading));
+
+    // Create tasks
+    xTaskCreate(monitorTask, "Monitor", STACK_MONITOR, nullptr, PRIO_MONITOR, nullptr);
+    xTaskCreate(commTask, "Comm", STACK_COMM, nullptr, PRIO_COMM, nullptr);
+    xTaskCreate(filterTask, "Filter", STACK_FILTER, nullptr, PRIO_FILTER, nullptr);
+    xTaskCreate(fftTask, "FFT", STACK_FFT, nullptr, PRIO_FFT, nullptr);
+    xTaskCreate(samplerTask, "Sampler", STACK_SAMPLER, nullptr, PRIO_SAMPLER, nullptr);
+
+    logMsg("[BOOT] all tasks started");
 }
 
 void loop() {
-    delay(1000);
+    heltec_loop();
+    vTaskDelay(pdMS_TO_TICKS(100));
 }
