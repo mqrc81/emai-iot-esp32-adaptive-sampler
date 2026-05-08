@@ -19,7 +19,7 @@ static LoRaWANNode *s_node = &s_nodeInstance;
 
 int cayenneLPPEncode(uint8_t *buf, int bufSize, float value) {
     if (bufSize < 4) return -1;
-    int16_t encoded = (int16_t)(value * 100.0f);
+    int16_t encoded = (int16_t) (value * 100.0f);
     buf[0] = 0x01; // channel 1
     buf[1] = 0x02; // analog input type
     buf[2] = (encoded >> 8) & 0xFF;

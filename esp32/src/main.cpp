@@ -67,10 +67,13 @@ static void setPhase(const char *phase) {
         xSemaphoreGive(s_phaseMutex);
     }
     logFmt("[PHASE] %s", phase);
+    oledClear();
+    oledStatus(0, "Phase:");
+    oledStatus(1, phase);
 }
 
 // ======= WIFI =======
-static void connectWiFi() {
+static bool connectWiFi() {
     logFmt("[WIFI] connecting to %s", WIFI_SSID);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     int retries = 0;
@@ -78,11 +81,12 @@ static void connectWiFi() {
         vTaskDelay(pdMS_TO_TICKS(500));
         retries++;
     }
-    if (WiFi.status() == WL_CONNECTED) {
-        logFmt("[WIFI] connected ip=%s", WiFi.localIP().toString().c_str());
-    } else {
+    if (WiFi.status() != WL_CONNECTED) {
         logMsg("[WIFI] failed — continuing without MQTT");
+        return false;
     }
+    logFmt("[WIFI] connected ip=%s", WiFi.localIP().toString().c_str());
+    return true;
 }
 
 static void syncNTP() {
@@ -112,6 +116,7 @@ static void monitorTask(void *param) {
             xSemaphoreGive(s_phaseMutex);
         }
         PowerReading r = powerRead(phase);
+        oledStatus(4, "%.1fmA %.2fV", r.currentMa, r.voltageV);
         xQueueOverwrite(s_powerQueue, &r);
         vTaskDelay(pdMS_TO_TICKS(INA219_POLL_MS));
     }
@@ -532,6 +537,9 @@ void setup() {
     heltec_ve(true);
     delay(1000);
 
+    oledClear();
+    oledStatus(0, "BOOTING...");
+
     serialMutex = xSemaphoreCreateMutex();
     s_phaseMutex = xSemaphoreCreateMutex();
 
@@ -541,18 +549,22 @@ void setup() {
     Wire.begin(INA219_SDA, INA219_SCL);
     bool powerOk = powerInit();
     if (!powerOk) logMsg("[BOOT] INA219 not found — continuing without power measurement");
+    oledStatus(1, powerOk ? "Power OK" : "Power FAIL");
 
     // WiFi + NTP
-    connectWiFi();
+    bool wifiOK = connectWiFi();
+    oledStatus(2, wifiOK ? "WiFi OK" : "WiFi FAIL");
     syncNTP();
 
     // MQTT
     mqttInit(MQTT_HOST, MQTT_PORT, MQTT_CLIENT);
-    mqttEnsureConnected(MQTT_USER, MQTT_PASS);
+    bool mqttOK = mqttEnsureConnected(MQTT_USER, MQTT_PASS);
+    oledStatus(3, mqttOK ? "MQTT OK" : "MQTT FAIL");
 
     // LoRa
     loraInit();
-    loraJoin(); // blocks until joined or fails
+    bool loraOK = loraJoin(); // blocks until joined or fails
+    oledStatus(4, loraOK ? "LoRa OK" : "LoRa FAIL");
 
     // Create queues
     s_sampleQueue = xQueueCreate(1, sizeof(SampleBuffer));
@@ -569,6 +581,8 @@ void setup() {
     xTaskCreate(samplerTask, "Sampler", STACK_SAMPLER, nullptr, PRIO_SAMPLER, nullptr);
 
     logMsg("[BOOT] all tasks started");
+
+    delay(1000);
 }
 
 void loop() {
