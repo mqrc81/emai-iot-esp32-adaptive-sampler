@@ -15,7 +15,8 @@ bool powerInit() {
         logMsg("[PWR] mutex creation failed");
         return false;
     }
-    if (!ina219.begin()) {
+    if (!ina219.begin(&Wire1)) {
+        // using Wire1 to not conflict with internal display wiring
         logMsg("[PWR] INA219 not found");
         return false;
     }

@@ -534,19 +534,19 @@ done:
 // ======= SETUP =======
 void setup() {
     heltec_setup(); // initialises radio, must be first
+    delay(1000);
     heltec_ve(true);
     delay(1000);
-
-    oledClear();
-    oledStatus(0, "BOOTING...");
 
     serialMutex = xSemaphoreCreateMutex();
     s_phaseMutex = xSemaphoreCreateMutex();
 
+    oledClear();
+    oledStatus(0, "BOOTING...");
     logMsg("[BOOT] starting...");
 
-    // I2C for INA219 — before powerInit
-    Wire.begin(INA219_SDA, INA219_SCL);
+    // I2C for INA219 — using Wire1 so it doesn't conflict with internal display wiring
+    Wire1.begin(INA219_SDA, INA219_SCL);
     bool powerOk = powerInit();
     if (!powerOk) logMsg("[BOOT] INA219 not found — continuing without power measurement");
     oledStatus(1, powerOk ? "Power OK" : "Power FAIL");
