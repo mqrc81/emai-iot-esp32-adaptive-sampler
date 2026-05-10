@@ -188,7 +188,10 @@ static void filterTask(void *param) {
                 }
 
                 // Error vs clean signal
-                float trueVal = generateSignal(i / wb.adaptiveRate, SIGNAL_1);
+                const SignalDef &sigDef = (wb.signalIndex >= 0 && wb.signalIndex < 3)
+                                              ? *ALL_SIGNALS[wb.signalIndex]
+                                              : SIGNAL_1;
+                float trueVal = generateSignal(i / wb.adaptiveRate, sigDef);
                 totalError += fabsf(cleaned - trueVal);
                 counted++;
             } else {
@@ -282,30 +285,33 @@ static void samplerTask(void *param) {
 
     // ===== PHASE 2: FFT → ADAPTIVE RATE =====
     setPhase("FFT_COLLECT");
-    {
-        float *buf = (float *) malloc(FFT_SIZE * sizeof(float));
-        if (!buf) {
-            logMsg("[SAMPLER] FFT malloc failed");
-            vTaskDelete(nullptr);
-        }
 
-        for (int i = 0; i < FFT_SIZE; i++)
-            buf[i] = generateSignal(i / MAX_SAMPLE_RATE, SIGNAL_1);
-
-        SampleBuffer sb = {buf, FFT_SIZE, MAX_SAMPLE_RATE};
-        xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
-
-        // Wait for adaptive rate from FFTTask
-        xQueueReceive(s_rateQueue, &adaptiveRate, portMAX_DELAY);
-        logFmt("[SAMPLER] adaptive rate set to %.2fHz", adaptiveRate);
-        loraSendSummary(adaptiveRate, "FFT_BASELINE");
+    float *buf = (float *) malloc(FFT_SIZE * sizeof(float));
+    if (!buf) {
+        logMsg("[SAMPLER] FFT malloc failed");
+        vTaskDelete(nullptr);
     }
+
+    for (int i = 0; i < FFT_SIZE; i++)
+        buf[i] = generateSignal(i / MAX_SAMPLE_RATE, SIGNAL_1);
+
+    SampleBuffer sb = {buf, FFT_SIZE, MAX_SAMPLE_RATE};
+    xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
+
+    // Wait for adaptive rate from FFTTask
+    xQueueReceive(s_rateQueue, &adaptiveRate, portMAX_DELAY);
+    float baselineAdaptiveRate = adaptiveRate;
+    logFmt("[SAMPLER] adaptive rate set to %.2fHz", adaptiveRate);
+    loraSendSummary(adaptiveRate, "FFT_BASELINE");
 
     // ===== PHASES 3 & 6: THREE SIGNALS — CLEAN WINDOWED AVERAGE =====
     for (int sigIdx = 0; sigIdx < 3; sigIdx++) {
         const SignalDef &sig = *ALL_SIGNALS[sigIdx];
-        setPhase("WINDOW_CLEAN");
         powerResetEnergy();
+
+        char fftLabel[32];
+        snprintf(fftLabel, sizeof(fftLabel), "SIG%d_FFT", sigIdx);
+        setPhase(fftLabel); // e.g. SIG0_FFT
 
         // Run FFT for this signal to get its adaptive rate
         float *fftBuf = (float *) malloc(FFT_SIZE * sizeof(float));
@@ -322,9 +328,10 @@ static void samplerTask(void *param) {
         xQueueReceive(s_rateQueue, &sigAdaptiveRate, portMAX_DELAY);
         logFmt("[SAMPLER] signal %d adaptive=%.2fHz", sigIdx, sigAdaptiveRate);
 
-        char loraLabel[32];
-        snprintf(loraLabel, sizeof(loraLabel), "SIG%d_FFT", sigIdx);
-        loraSendSummary(sigAdaptiveRate, loraLabel);
+        char windowLabel[32];
+        snprintf(windowLabel, sizeof(windowLabel), "SIG%d_WINDOW", sigIdx);
+        setPhase(windowLabel); // e.g. SIG0_WINDOW
+        loraSendSummary(sigAdaptiveRate, fftLabel);
 
         int totalSamples = (int) (sigAdaptiveRate * WINDOW_SECS);
 
@@ -370,7 +377,7 @@ static void samplerTask(void *param) {
         setPhase(phaseLabel);
         powerResetEnergy();
 
-        int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+        int totalSamples = (int) (baselineAdaptiveRate * WINDOW_SECS);
 
         for (int filterType: filterTypes) {
             for (int w = 0; w < NUM_WINDOWS; w++) {
@@ -391,7 +398,7 @@ static void samplerTask(void *param) {
                 wb.groundTruth = gt;
                 wb.size = totalSamples;
                 wb.sampleRate = MAX_SAMPLE_RATE;
-                wb.adaptiveRate = adaptiveRate;
+                wb.adaptiveRate = baselineAdaptiveRate;
                 wb.signalIndex = 0; // Signal 1 only for noisy
                 wb.filterType = filterType;
                 wb.anomalyProb = prob;
