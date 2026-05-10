@@ -33,7 +33,7 @@ static QueueHandle_t s_powerQueue = nullptr; // MonitorTask → CommTask
 
 // ======= SHARED EXPERIMENT STATE =======
 static char s_currentPhase[32] = "INIT";
-std::atomic s_experimentDone{false};
+static std::atomic<bool> s_experimentDone{false};
 
 // ======= STRUCTS =======
 struct SampleBuffer {
