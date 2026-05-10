@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <atomic>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -32,7 +33,7 @@ static QueueHandle_t s_powerQueue = nullptr; // MonitorTask → CommTask
 
 // ======= SHARED EXPERIMENT STATE =======
 static char s_currentPhase[32] = "INIT";
-static volatile bool s_experimentDone = false;
+std::atomic s_experimentDone{false};
 
 // ======= STRUCTS =======
 struct SampleBuffer {
@@ -109,7 +110,7 @@ static void syncNTP() {
 // ======= MONITOR TASK =======
 static void monitorTask(void *param) {
     for (;;) {
-        if (s_experimentDone) vTaskDelete(nullptr);
+        if (s_experimentDone.load()) vTaskDelete(nullptr);
         char phase[32];
         if (xSemaphoreTake(s_phaseMutex, pdMS_TO_TICKS(100))) {
             strncpy(phase, s_currentPhase, sizeof(phase));
@@ -125,7 +126,7 @@ static void monitorTask(void *param) {
 // ======= COMM TASK =======
 static void commTask(void *param) {
     for (;;) {
-        if (s_experimentDone) {
+        if (s_experimentDone.load()) {
             mqttLoop();
             vTaskDelay(pdMS_TO_TICKS(100));
             continue;
@@ -142,16 +143,7 @@ static void commTask(void *param) {
 
             // Send windowed average via LoRaWAN — only for last window of each phase to respect duty cycle
             if (r.windowIndex == NUM_WINDOWS - 1 && r.signalIndex >= 0) {
-                char label[32];
-                if (r.filterType == 0)
-                    snprintf(label, sizeof(label), "SIG%d_AVG", r.signalIndex);
-                else if (r.filterType == 1)
-                    snprintf(label, sizeof(label), "SIG%d_ZSCORE_p%.0f", r.signalIndex, r.anomalyProb * 100);
-                else if (r.filterType == 2)
-                    snprintf(label, sizeof(label), "SIG%d_HAMPEL_p%.0f", r.signalIndex, r.anomalyProb * 100);
-                else
-                    return;
-                loraSendSummary(r.average, label);
+                loraSendWindow(r);
             }
         }
 
@@ -218,25 +210,27 @@ static void filterTask(void *param) {
         float average = sum / wb.size;
         int evaluated = counted > 0 ? counted : 1;
 
-        WindowResult result{};
-        result.average = average;
-        result.adaptiveRate = wb.adaptiveRate;
-        result.sampleCount = wb.size;
-        result.computeMs = computeMs;
-        result.timestampUs = nowUs();
-        result.signalIndex = wb.signalIndex;
-        result.filterType = wb.filterType;
-        result.anomalyProb = wb.anomalyProb;
-        result.tpr = (float) tp / (tp + fn + 1e-6f);
-        result.fpr = (float) fp / (fp + tn + 1e-6f);
-        result.meanError = totalError / evaluated;
-        result.tp = tp;
-        result.fp = fp;
-        result.fn = fn;
-        result.tn = tn;
-        result.windowIndex = wb.windowIndex;
+        WindowResult r{};
+        r.average = average;
+        r.adaptiveRate = wb.adaptiveRate;
+        r.sampleCount = wb.size;
+        r.computeMs = computeMs;
+        r.timestampUs = nowUs();
+        r.signalIndex = wb.signalIndex;
+        r.filterType = wb.filterType;
+        r.anomalyProb = wb.anomalyProb;
+        r.tpr = (float) tp / (tp + fn + 1e-6f);
+        r.fpr = (float) fp / (fp + tn + 1e-6f);
+        r.meanError = totalError / evaluated;
+        r.tp = tp;
+        r.fp = fp;
+        r.fn = fn;
+        r.tn = tn;
+        r.windowIndex = wb.windowIndex;
+        r.bytesAdaptive = r.sampleCount * sizeof(float);
+        r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
 
-        xQueueSend(s_resultQueue, &result, portMAX_DELAY);
+        xQueueSend(s_resultQueue, &r, portMAX_DELAY);
 
         // Free buffers allocated by SamplerTask
         free(wb.data);
@@ -266,9 +260,6 @@ static void fftTask(void *param) {
 
         // Send adaptive rate back to SamplerTask
         xQueueSend(s_rateQueue, &fft.optimalSampleRate, portMAX_DELAY);
-
-        // LoRaWAN summary uplink for FFT phase
-        loraSendSummary(fft.dominantFrequency, "FFT");
     }
 }
 
@@ -307,8 +298,10 @@ static void samplerTask(void *param) {
         vTaskDelete(nullptr);
     }
 
-    for (int i = 0; i < FFT_SIZE; i++)
+    for (int i = 0; i < FFT_SIZE; i++) {
         buf[i] = generateSignal(i / MAX_SAMPLE_RATE, SIGNAL_1);
+        vTaskDelay(pdMS_TO_TICKS(1000.0f / MAX_SAMPLE_RATE)); // 1ms at 1000Hz
+    }
 
     SampleBuffer sb = {buf, FFT_SIZE, MAX_SAMPLE_RATE};
     xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
@@ -332,8 +325,10 @@ static void samplerTask(void *param) {
             logMsg("[SAMPLER] FFT malloc failed");
             continue;
         }
-        for (int i = 0; i < FFT_SIZE; i++)
+        for (int i = 0; i < FFT_SIZE; i++) {
             fftBuf[i] = generateSignal(i / MAX_SAMPLE_RATE, sig);
+            vTaskDelay(pdMS_TO_TICKS(1000.0f / sigAdaptiveRate)); // ~102ms at 9.77Hz
+        }
         SampleBuffer sb = {fftBuf, FFT_SIZE, MAX_SAMPLE_RATE};
         xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
 
@@ -405,8 +400,7 @@ static void samplerTask(void *param) {
             } else {
                 // Generate 128 noisy samples (ground truth discarded here)
                 for (int i = 0; i < FFT_NOISY_SIZE; i++) {
-                    int dummy;
-                    noisyFftBuf[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &dummy);
+                    noisyFftBuf[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, nullptr);
                 }
 
                 // Pre-filter FFT
@@ -453,8 +447,10 @@ static void samplerTask(void *param) {
                     continue;
                 }
 
-                for (int i = 0; i < totalSamples; i++)
+                for (int i = 0; i < totalSamples; i++) {
                     winBuf[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &gt[i]);
+                    vTaskDelay(pdMS_TO_TICKS(1000.0f / adaptiveRate));
+                }
 
                 WindowBuffer wb = {};
                 wb.data = winBuf;
@@ -471,8 +467,6 @@ static void samplerTask(void *param) {
             }
         }
 
-        // LoRaWAN summary per injection rate
-        loraSendSummary(prob, phaseLabel);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -498,8 +492,10 @@ static void samplerTask(void *param) {
             goto done;
         }
 
-        for (int i = 0; i < totalSamples; i++)
+        for (int i = 0; i < totalSamples; i++) {
             samples[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &gt[i]);
+            vTaskDelay(pdMS_TO_TICKS(1000.0f / adaptiveRate));
+        }
 
         for (int wi = 0; wi < nSizes; wi++) {
             int W = windowSizes[wi];
@@ -544,6 +540,8 @@ static void samplerTask(void *param) {
                 r.fn = fn;
                 r.tn = tn;
                 r.windowIndex = wi;
+                r.bytesAdaptive = r.sampleCount * sizeof(float);
+                r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
 
@@ -586,19 +584,18 @@ static void samplerTask(void *param) {
                 r.fn = fn;
                 r.tn = tn;
                 r.windowIndex = wi;
+                r.bytesAdaptive = r.sampleCount * sizeof(float);
+                r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
         }
 
         free(samples);
         free(gt);
-
-        // LoRaWAN summary for trade-off phase
-        loraSendSummary(21.0f, "TRADEOFF_BEST_W");
     }
 
 done:
-    s_experimentDone = true;
+    s_experimentDone.store(true);
     logMsg("[SAMPLER] experiment complete");
     vTaskDelete(nullptr);
 }

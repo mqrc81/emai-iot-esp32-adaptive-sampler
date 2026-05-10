@@ -58,10 +58,26 @@ bool loraJoin() {
     return true;
 }
 
-bool loraSendSummary(float value, const char *label) {
+bool loraSendWindow(const WindowResult &r) {
     if (!s_joined) {
         logMsg("[LORA] not joined — skipping uplink");
         return false;
+    }
+
+    char label[32];
+    switch (r.filterType) {
+        case 0:
+            snprintf(label, sizeof(label), "SIG%d_AVG", r.signalIndex);
+            break;
+        case 1:
+            snprintf(label, sizeof(label), "SIG%d_ZSCORE_p%.0f", r.signalIndex, r.anomalyProb * 100);
+            break;
+        case 2:
+            snprintf(label, sizeof(label), "SIG%d_HAMPEL_p%.0f", r.signalIndex, r.anomalyProb * 100);
+            break;
+        default:
+            logFmt("[LORA] invalid filter type %s – skipping uplink", r.filterType);
+            return false;
     }
 
     uint32_t now = millis();
@@ -71,13 +87,13 @@ bool loraSendSummary(float value, const char *label) {
     }
 
     uint8_t payload[4];
-    int len = cayenneLPPEncode(payload, sizeof(payload), value);
+    int len = cayenneLPPEncode(payload, sizeof(payload), r.average);
     if (len < 0) {
         logMsg("[LORA] encoding failed");
         return false;
     }
 
-    logFmt("[LORA] sending uplink for %s value=%.4f", label, value);
+    logFmt("[LORA] sending uplink for %s value=%.4f", label, r.average);
 
     // sendReceive blocks ~5-6s for RX1+RX2 windows
     // CommTask calls mqttLoop() immediately after this returns

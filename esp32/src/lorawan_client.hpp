@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <cstdint>
+#include "mqtt_client.hpp"
 
 // Cayenne LPP analog input encoding
 // Returns number of bytes written, -1 on error
@@ -10,4 +11,4 @@ bool loraInit();
 
 bool loraJoin();
 
-bool loraSendSummary(float value, const char *label);
+bool loraSendWindow(const WindowResult &result);
