@@ -300,7 +300,6 @@ static void samplerTask(void *param) {
 
     // Wait for adaptive rate from FFTTask
     xQueueReceive(s_rateQueue, &adaptiveRate, portMAX_DELAY);
-    float baselineAdaptiveRate = adaptiveRate;
     logFmt("[SAMPLER] adaptive rate set to %.2fHz", adaptiveRate);
     loraSendSummary(adaptiveRate, "FFT_BASELINE");
 
@@ -377,7 +376,59 @@ static void samplerTask(void *param) {
         setPhase(phaseLabel);
         powerResetEnergy();
 
-        int totalSamples = (int) (baselineAdaptiveRate * WINDOW_SECS);
+        // FFT comparison: pre- vs post-filter on 128-sample noisy buffer
+        // 128 is the nearest power of 2 that gives adequate frequency resolution
+        // at the adaptive rate (~9.77 Hz × 13 s). The window-average buffers
+        // (totalSamples ≈ 48) are too small and not a power of 2, so we collect
+        // a dedicated buffer here.
+        {
+            static constexpr int FFT_NOISY_SIZE = 128;
+            float *noisyFftBuf = (float *) malloc(FFT_NOISY_SIZE * sizeof(float));
+            float *filteredBuf = (float *) malloc(FFT_NOISY_SIZE * sizeof(float));
+
+            if (!noisyFftBuf || !filteredBuf) {
+                logMsg("[SAMPLER] noisy FFT malloc failed");
+                free(noisyFftBuf);
+                free(filteredBuf);
+            } else {
+                // Generate 128 noisy samples (ground truth discarded here)
+                for (int i = 0; i < FFT_NOISY_SIZE; i++) {
+                    int dummy;
+                    noisyFftBuf[i] = generateNoisySignal(i / adaptiveRate, noisyCfg, &dummy);
+                }
+
+                // Pre-filter FFT
+                FFTResult preFft = computeFFT(noisyFftBuf, FFT_NOISY_SIZE, adaptiveRate);
+                logFmt("[FFT_NOISY] p=%.0f%% pre-filter  dominant=%.2fHz optRate=%.2fHz",
+                       prob * 100, preFft.dominantFrequency, preFft.optimalSampleRate);
+
+                // Filter with Z-score (representative; Hampel would be symmetric)
+                int half = FILTER_WINDOW / 2;
+                for (int i = 0; i < FFT_NOISY_SIZE; i++) {
+                    if (i >= half && i < FFT_NOISY_SIZE - half) {
+                        FilterResult fr = zscoreFilter(&noisyFftBuf[i - half], FILTER_WINDOW, half, ZSCORE_THRESH);
+                        filteredBuf[i] = fr.cleaned;
+                    } else {
+                        filteredBuf[i] = noisyFftBuf[i];
+                    }
+                }
+
+                // Post-filter FFT
+                FFTResult postFft = computeFFT(filteredBuf, FFT_NOISY_SIZE, adaptiveRate);
+                logFmt("[FFT_NOISY] p=%.0f%% post-filter dominant=%.2fHz optRate=%.2fHz",
+                       prob * 100, postFft.dominantFrequency, postFft.optimalSampleRate);
+
+                logFmt("[FFT_NOISY] p=%.0f%% rate delta=%.2fHz (filtering saves %.2fHz over-sampling)",
+                       prob * 100,
+                       preFft.optimalSampleRate - postFft.optimalSampleRate,
+                       preFft.optimalSampleRate - postFft.optimalSampleRate);
+
+                free(noisyFftBuf);
+                free(filteredBuf);
+            }
+        }
+
+        int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
 
         for (int filterType: filterTypes) {
             for (int w = 0; w < NUM_WINDOWS; w++) {
@@ -398,7 +449,7 @@ static void samplerTask(void *param) {
                 wb.groundTruth = gt;
                 wb.size = totalSamples;
                 wb.sampleRate = MAX_SAMPLE_RATE;
-                wb.adaptiveRate = baselineAdaptiveRate;
+                wb.adaptiveRate = adaptiveRate;
                 wb.signalIndex = 0; // Signal 1 only for noisy
                 wb.filterType = filterType;
                 wb.anomalyProb = prob;
