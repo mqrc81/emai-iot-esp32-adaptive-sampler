@@ -139,6 +139,20 @@ static void commTask(void *param) {
 
             mqttEnsureConnected(MQTT_USER, MQTT_PASS);
             mqttPublishWindow(r, power);
+
+            // Send windowed average via LoRaWAN — only for last window of each phase to respect duty cycle
+            if (r.windowIndex == NUM_WINDOWS - 1 && r.signalIndex >= 0) {
+                char label[32];
+                if (r.filterType == 0)
+                    snprintf(label, sizeof(label), "SIG%d_AVG", r.signalIndex);
+                else if (r.filterType == 1)
+                    snprintf(label, sizeof(label), "SIG%d_ZSCORE_p%.0f", r.signalIndex, r.anomalyProb * 100);
+                else if (r.filterType == 2)
+                    snprintf(label, sizeof(label), "SIG%d_HAMPEL_p%.0f", r.signalIndex, r.anomalyProb * 100);
+                else
+                    return;
+                loraSendSummary(r.average, label);
+            }
         }
 
         mqttEnsureConnected(MQTT_USER, MQTT_PASS);
@@ -220,6 +234,7 @@ static void filterTask(void *param) {
         result.fp = fp;
         result.fn = fn;
         result.tn = tn;
+        result.windowIndex = wb.windowIndex;
 
         xQueueSend(s_resultQueue, &result, portMAX_DELAY);
 
@@ -301,7 +316,6 @@ static void samplerTask(void *param) {
     // Wait for adaptive rate from FFTTask
     xQueueReceive(s_rateQueue, &adaptiveRate, portMAX_DELAY);
     logFmt("[SAMPLER] adaptive rate set to %.2fHz", adaptiveRate);
-    loraSendSummary(adaptiveRate, "FFT_BASELINE");
 
     // ===== PHASES 3 & 6: THREE SIGNALS — CLEAN WINDOWED AVERAGE =====
     for (int sigIdx = 0; sigIdx < 3; sigIdx++) {
@@ -330,7 +344,6 @@ static void samplerTask(void *param) {
         char windowLabel[32];
         snprintf(windowLabel, sizeof(windowLabel), "SIG%d_WINDOW", sigIdx);
         setPhase(windowLabel); // e.g. SIG0_WINDOW
-        loraSendSummary(sigAdaptiveRate, fftLabel);
 
         int totalSamples = (int) (sigAdaptiveRate * WINDOW_SECS);
 
@@ -359,7 +372,6 @@ static void samplerTask(void *param) {
         }
 
         // LoRaWAN summary per signal
-        loraSendSummary(sigAdaptiveRate, sig.name);
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -531,6 +543,7 @@ static void samplerTask(void *param) {
                 r.fp = fp;
                 r.fn = fn;
                 r.tn = tn;
+                r.windowIndex = wi;
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
 
@@ -572,6 +585,7 @@ static void samplerTask(void *param) {
                 r.fp = fp;
                 r.fn = fn;
                 r.tn = tn;
+                r.windowIndex = wi;
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
         }

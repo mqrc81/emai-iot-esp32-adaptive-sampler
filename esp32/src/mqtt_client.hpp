@@ -18,6 +18,7 @@ struct WindowResult {
     float fpr;
     float meanError;
     int tp, fp, fn, tn;
+    int windowIndex;
 };
 
 bool mqttInit(const char *host, int port, const char *clientId);
