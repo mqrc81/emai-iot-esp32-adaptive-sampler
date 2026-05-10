@@ -597,6 +597,10 @@ static void samplerTask(void *param) {
     }
 
 done:
+    while (uxQueueMessagesWaiting(s_resultQueue) > 0) {
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+    vTaskDelay(pdMS_TO_TICKS(2000)); // extra buffer for in-flight MQTT publishes
     s_experimentDone.store(true);
     logMsg("[SAMPLER] experiment complete");
     vTaskDelete(nullptr);
@@ -641,7 +645,7 @@ void setup() {
     s_sampleQueue = xQueueCreate(1, sizeof(SampleBuffer));
     s_rateQueue = xQueueCreate(1, sizeof(float));
     s_windowQueue = xQueueCreate(2, sizeof(WindowBuffer));
-    s_resultQueue = xQueueCreate(8, sizeof(WindowResult));
+    s_resultQueue = xQueueCreate(16, sizeof(WindowResult));
     s_powerQueue = xQueueCreate(1, sizeof(PowerReading));
 
     // Create tasks
