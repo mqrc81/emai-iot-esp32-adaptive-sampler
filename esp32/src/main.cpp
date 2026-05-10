@@ -142,7 +142,7 @@ static void commTask(void *param) {
             mqttPublishWindow(r, power);
 
             // Send windowed average via LoRaWAN — only for last window of each phase to respect duty cycle
-            if (r.windowIndex == NUM_WINDOWS - 1 && r.signalIndex >= 0) {
+            if (r.windowIndex == NUM_WINDOWS - 1 && r.windowSize == 0) {
                 loraSendWindow(r);
             }
         }
@@ -327,7 +327,7 @@ static void samplerTask(void *param) {
         }
         for (int i = 0; i < FFT_SIZE; i++) {
             fftBuf[i] = generateSignal(i / MAX_SAMPLE_RATE, sig);
-            vTaskDelay(pdMS_TO_TICKS(1000.0f / sigAdaptiveRate)); // ~102ms at 9.77Hz
+            vTaskDelay(pdMS_TO_TICKS(1000.0f / MAX_SAMPLE_RATE)); // 1ms at 1000Hz
         }
         SampleBuffer sb = {fftBuf, FFT_SIZE, MAX_SAMPLE_RATE};
         xQueueSend(s_sampleQueue, &sb, portMAX_DELAY);
@@ -349,8 +349,10 @@ static void samplerTask(void *param) {
                 continue;
             }
 
-            for (int i = 0; i < totalSamples; i++)
+            for (int i = 0; i < totalSamples; i++) {
                 winBuf[i] = generateSignal(i / sigAdaptiveRate, sig);
+                vTaskDelay(pdMS_TO_TICKS(1000.0f / sigAdaptiveRate)); // e.g. ~102ms at 9.77Hz
+            }
 
             WindowBuffer wb = {};
             wb.data = winBuf;
@@ -366,7 +368,6 @@ static void samplerTask(void *param) {
             xQueueSend(s_windowQueue, &wb, portMAX_DELAY);
         }
 
-        // LoRaWAN summary per signal
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
@@ -525,7 +526,7 @@ static void samplerTask(void *param) {
                 float meanErr = totalError / evaluated;
 
                 WindowResult r = {};
-                r.adaptiveRate = (float) W; // reuse field for window size W
+                r.adaptiveRate = adaptiveRate;
                 r.computeMs = timeMs;
                 r.timestampUs = nowUs();
                 r.signalIndex = -1; // sentinel for trade-off phase
@@ -534,13 +535,14 @@ static void samplerTask(void *param) {
                 r.tpr = tpr;
                 r.fpr = fpr;
                 r.meanError = meanErr;
-                r.sampleCount = W * (int) sizeof(float); // reuse field for memory bytes (W * sizeof(float))
+                r.sampleCount = totalSamples;
                 r.tp = tp;
                 r.fp = fp;
                 r.fn = fn;
                 r.tn = tn;
                 r.windowIndex = wi;
-                r.bytesAdaptive = r.sampleCount * sizeof(float);
+                r.windowSize = W;
+                r.bytesAdaptive = W * sizeof(float);
                 r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }

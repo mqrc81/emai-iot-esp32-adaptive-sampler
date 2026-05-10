@@ -76,7 +76,7 @@ bool loraSendWindow(const WindowResult &r) {
             snprintf(label, sizeof(label), "SIG%d_HAMPEL_p%.0f", r.signalIndex, r.anomalyProb * 100);
             break;
         default:
-            logFmt("[LORA] invalid filter type %s – skipping uplink", r.filterType);
+            logFmt("[LORA] invalid filter type %d – skipping uplink", r.filterType);
             return false;
     }
 

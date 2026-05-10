@@ -19,6 +19,7 @@ struct WindowResult {
     float meanError;
     int tp, fp, fn, tn;
     int windowIndex;
+    int windowSize;
     int bytesAdaptive;
     int bytesOversampled;
 };
