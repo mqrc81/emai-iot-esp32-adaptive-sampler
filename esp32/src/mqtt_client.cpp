@@ -49,6 +49,7 @@ void mqttPublishWindow(const WindowResult &r, const PowerReading &power) {
                        "\"signal\":%d,\"filter\":%d,\"anomaly_prob\":%.2f,"
                        "\"tpr\":%.4f,\"fpr\":%.4f,\"mean_error\":%.6f,"
                        "\"tp\":%d,\"fp\":%d,\"fn\":%d,\"tn\":%d,"
+                       "\"window_index\":%d,\"window_size\":%d,\"bytes_adaptive\":%d,\"bytes_oversampled\":%d,"
                        "\"current_ma\":%.2f,\"voltage_v\":%.3f,"
                        "\"power_mw\":%.2f,\"energy_mj\":%.4f,\"phase\":\"%s\"}",
                        r.average, r.adaptiveRate, r.sampleCount,
@@ -56,6 +57,7 @@ void mqttPublishWindow(const WindowResult &r, const PowerReading &power) {
                        r.signalIndex, r.filterType, r.anomalyProb,
                        r.tpr, r.fpr, r.meanError,
                        r.tp, r.fp, r.fn, r.tn,
+                       r.windowIndex, r.windowSize, r.bytesAdaptive, r.bytesOversampled,
                        power.currentMa, power.voltageV,
                        power.powerMw, power.energyMj, power.phase);
 
