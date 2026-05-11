@@ -11,4 +11,4 @@ bool loraInit();
 
 bool loraJoin();
 
-bool loraSendWindow(const WindowResult &result);
+bool loraPublishWindow(const WindowResult &result);

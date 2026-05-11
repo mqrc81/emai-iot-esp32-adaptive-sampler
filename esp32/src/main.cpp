@@ -151,7 +151,7 @@ static void commTask(void *param) {
 
             // Send windowed average via LoRaWAN — only for last window of each phase to respect duty cycle
             if (r.windowIndex == NUM_WINDOWS - 1 && r.signalIndex >= 0) {
-                loraSendWindow(r);
+                loraPublishWindow(r);
             }
         }
 

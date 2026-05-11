@@ -58,7 +58,7 @@ bool loraJoin() {
     return true;
 }
 
-bool loraSendWindow(const WindowResult &r) {
+bool loraPublishWindow(const WindowResult &r) {
     if (!s_joined) {
         logMsg("[LORA] not joined — skipping uplink");
         return false;
