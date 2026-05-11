@@ -1,0 +1,658 @@
+[
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-05-11T08:55:14.724496533Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "esp32s3-2",
+        "application_ids": {
+          "application_id": "esp32-adaptive-sampler"
+        },
+        "dev_eui": "70B3D57ED007763F",
+        "join_eui": "0000000000000000",
+        "dev_addr": "260BF6DE"
+      },
+      "correlation_ids": [
+        "gs:uplink:01KRB3YSTNRMCQA2AZ43VF6AZ9"
+      ],
+      "received_at": "2026-05-11T08:55:14.722952626Z",
+      "uplink_message": {
+        "session_key_id": "AZ4WPHIU7mJ8qnmDjOo3yg==",
+        "f_port": 1,
+        "f_cnt": 3,
+        "frm_payload": "AQL/+A==",
+        "decoded_payload": {
+          "analog_in_1": -0.08
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "mikrotik-ttn-loar-diag",
+              "eui": "50303541603F4750"
+            },
+            "time": "2026-05-11T08:50:16.709950Z",
+            "timestamp": 2535216068,
+            "rssi": -104,
+            "channel_rssi": -104,
+            "snr": 8,
+            "location": {
+              "latitude": 41.89116664254687,
+              "longitude": 12.503255216024609,
+              "altitude": 20,
+              "source": "SOURCE_REGISTRY"
+            },
+            "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQxKfxuAkaDAjysobQBhCa19P2ASCg65y15NbJAg==",
+            "channel_index": 3,
+            "received_at": "2026-05-11T08:55:14.488387842Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 8,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "867100000",
+          "timestamp": 2535216068,
+          "time": "2026-05-11T08:50:16.709950Z"
+        },
+        "received_at": "2026-05-11T08:55:14.518601281Z",
+        "consumed_airtime": "0.102912s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3YSTNRMCQA2AZ43VF6AZ9"
+    ],
+    "origin": "ip-10-100-13-114.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3YT1496VENSBAPN6Y2SJP"
+  },
+  {
+    "name": "ns.up.data.process",
+    "time": "2026-05-11T08:55:14.722318136Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.UplinkMessage",
+      "raw_payload": "QN72CyaCAwADBwFTcspC/oyVQg==",
+      "payload": {
+        "m_hdr": {
+          "m_type": "UNCONFIRMED_UP"
+        },
+        "mic": "/oyVQg==",
+        "mac_payload": {
+          "f_hdr": {
+            "dev_addr": "260BF6DE",
+            "f_ctrl": {
+              "adr": true
+            },
+            "f_cnt": 3,
+            "f_opts": "Awc="
+          },
+          "f_port": 1,
+          "frm_payload": "U3LKQg==",
+          "full_f_cnt": 3
+        }
+      },
+      "settings": {
+        "data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 8,
+            "coding_rate": "4/5"
+          }
+        },
+        "frequency": "867100000",
+        "timestamp": 2535216068,
+        "time": "2026-05-11T08:50:16.709950Z"
+      },
+      "rx_metadata": [
+        {
+          "gateway_ids": {
+            "gateway_id": "mikrotik-ttn-loar-diag",
+            "eui": "50303541603F4750"
+          },
+          "time": "2026-05-11T08:50:16.709950Z",
+          "timestamp": 2535216068,
+          "rssi": -104,
+          "channel_rssi": -104,
+          "snr": 8,
+          "location": {
+            "latitude": 41.89116664254687,
+            "longitude": 12.503255216024609,
+            "altitude": 20,
+            "source": "SOURCE_REGISTRY"
+          },
+          "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQxKfxuAkaDAjysobQBhCa19P2ASCg65y15NbJAg==",
+          "channel_index": 3,
+          "received_at": "2026-05-11T08:55:14.488387842Z"
+        }
+      ],
+      "received_at": "2026-05-11T08:55:14.518601281Z",
+      "correlation_ids": [
+        "gs:uplink:01KRB3YSTNRMCQA2AZ43VF6AZ9"
+      ],
+      "device_channel_index": 3,
+      "consumed_airtime": "0.102912s"
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3YSTNRMCQA2AZ43VF6AZ9"
+    ],
+    "origin": "ip-10-100-5-36.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3YT12T4RTKV7XS2ZCTTS3"
+  },
+  {
+    "name": "ns.down.data.schedule.attempt",
+    "time": "2026-05-11T08:54:50.525370435Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.DownlinkMessage",
+      "raw_payload": "YN72CyaFAQADQP8AAd7QFqk=",
+      "payload": {
+        "m_hdr": {
+          "m_type": "UNCONFIRMED_DOWN"
+        },
+        "mic": "3tAWqQ==",
+        "mac_payload": {
+          "f_hdr": {
+            "dev_addr": "260BF6DE",
+            "f_ctrl": {
+              "adr": true
+            },
+            "f_cnt": 1,
+            "f_opts": "A0D/AAE="
+          },
+          "full_f_cnt": 1
+        }
+      },
+      "request": {
+        "downlink_paths": [
+          {
+            "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQ1PKerQkaCwjasobQBhDZ++g2IKDgr7mJ1skC"
+          }
+        ],
+        "rx1_delay": 5,
+        "rx1_data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 9,
+            "coding_rate": "4/5"
+          }
+        },
+        "rx1_frequency": "867100000",
+        "rx2_data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 9,
+            "coding_rate": "4/5"
+          }
+        },
+        "rx2_frequency": "869525000",
+        "priority": "HIGHEST",
+        "frequency_plan_id": "EU_863_870_TTN"
+      },
+      "correlation_ids": [
+        "gs:uplink:01KRB3Y203SD62F03P6P2325FZ",
+        "ns:downlink:01KRB3Y2CXHGF4ST7WJ8VF5XZN",
+        "ns:transmission:01KRB3Y2CXM37V3Z0ZZJ60JXAE"
+      ]
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3Y203SD62F03P6P2325FZ",
+      "ns:downlink:01KRB3Y2CXHGF4ST7WJ8VF5XZN",
+      "ns:transmission:01KRB3Y2CXM37V3Z0ZZJ60JXAE"
+    ],
+    "origin": "ip-10-100-5-36.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3Y2CXR1YAKF4DN3SSB5R8"
+  },
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-05-11T08:54:50.326790884Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "esp32s3-2",
+        "application_ids": {
+          "application_id": "esp32-adaptive-sampler"
+        },
+        "dev_eui": "70B3D57ED007763F",
+        "join_eui": "0000000000000000",
+        "dev_addr": "260BF6DE"
+      },
+      "correlation_ids": [
+        "gs:uplink:01KRB3Y203SD62F03P6P2325FZ"
+      ],
+      "received_at": "2026-05-11T08:54:50.322809158Z",
+      "uplink_message": {
+        "session_key_id": "AZ4WPHIU7mJ8qnmDjOo3yg==",
+        "f_port": 1,
+        "f_cnt": 2,
+        "frm_payload": "AQIAAg==",
+        "decoded_payload": {
+          "analog_in_1": 0.02
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "mikrotik-ttn-loar-diag",
+              "eui": "50303541603F4750"
+            },
+            "time": "2026-05-11T08:49:52.291832Z",
+            "timestamp": 2510797140,
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": 8.5,
+            "location": {
+              "latitude": 41.89116664254687,
+              "longitude": 12.503255216024609,
+              "altitude": 20,
+              "source": "SOURCE_REGISTRY"
+            },
+            "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQ1PKerQkaCwjasobQBhDZ++g2IKDgr7mJ1skC",
+            "channel_index": 3,
+            "received_at": "2026-05-11T08:54:50.085693881Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 9,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "867100000",
+          "timestamp": 2510797140,
+          "time": "2026-05-11T08:49:52.291832Z"
+        },
+        "received_at": "2026-05-11T08:54:50.116213907Z",
+        "consumed_airtime": "0.164864s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3Y203SD62F03P6P2325FZ"
+    ],
+    "origin": "ip-10-100-6-254.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3Y26P3PQ7DTMESZ2X2B24"
+  },
+  {
+    "name": "ns.up.data.process",
+    "time": "2026-05-11T08:54:50.322202775Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.UplinkMessage",
+      "raw_payload": "QN72CyaAAgABX29jTEOBPRE=",
+      "payload": {
+        "m_hdr": {
+          "m_type": "UNCONFIRMED_UP"
+        },
+        "mic": "Q4E9EQ==",
+        "mac_payload": {
+          "f_hdr": {
+            "dev_addr": "260BF6DE",
+            "f_ctrl": {
+              "adr": true
+            },
+            "f_cnt": 2
+          },
+          "f_port": 1,
+          "frm_payload": "X29jTA==",
+          "full_f_cnt": 2
+        }
+      },
+      "settings": {
+        "data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 9,
+            "coding_rate": "4/5"
+          }
+        },
+        "frequency": "867100000",
+        "timestamp": 2510797140,
+        "time": "2026-05-11T08:49:52.291832Z"
+      },
+      "rx_metadata": [
+        {
+          "gateway_ids": {
+            "gateway_id": "mikrotik-ttn-loar-diag",
+            "eui": "50303541603F4750"
+          },
+          "time": "2026-05-11T08:49:52.291832Z",
+          "timestamp": 2510797140,
+          "rssi": -109,
+          "channel_rssi": -109,
+          "snr": 8.5,
+          "location": {
+            "latitude": 41.89116664254687,
+            "longitude": 12.503255216024609,
+            "altitude": 20,
+            "source": "SOURCE_REGISTRY"
+          },
+          "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQ1PKerQkaCwjasobQBhDZ++g2IKDgr7mJ1skC",
+          "channel_index": 3,
+          "received_at": "2026-05-11T08:54:50.085693881Z"
+        }
+      ],
+      "received_at": "2026-05-11T08:54:50.116213907Z",
+      "correlation_ids": [
+        "gs:uplink:01KRB3Y203SD62F03P6P2325FZ"
+      ],
+      "device_channel_index": 3,
+      "consumed_airtime": "0.164864s"
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3Y203SD62F03P6P2325FZ"
+    ],
+    "origin": "ip-10-100-5-36.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3Y26JFQD6E3N0GCSHHRD5"
+  },
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-05-11T08:53:34.052015070Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "esp32s3-2",
+        "application_ids": {
+          "application_id": "esp32-adaptive-sampler"
+        },
+        "dev_eui": "70B3D57ED007763F",
+        "join_eui": "0000000000000000",
+        "dev_addr": "260BF6DE"
+      },
+      "correlation_ids": [
+        "gs:uplink:01KRB3VQGKVNJQGZND6MCWVS83"
+      ],
+      "received_at": "2026-05-11T08:53:34.049739807Z",
+      "uplink_message": {
+        "session_key_id": "AZ4WPHIU7mJ8qnmDjOo3yg==",
+        "f_port": 1,
+        "f_cnt": 1,
+        "frm_payload": "AQIAAA==",
+        "decoded_payload": {
+          "analog_in_1": 0
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "mikrotik-ttn-loar-diag",
+              "eui": "50303541603F4750"
+            },
+            "time": "2026-05-11T08:48:36.025240Z",
+            "timestamp": 2434529884,
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": 6,
+            "location": {
+              "latitude": 41.89116664254687,
+              "longitude": 12.503255216024609,
+              "altitude": 20,
+              "source": "SOURCE_REGISTRY"
+            },
+            "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQ3PTviAkaDAiNsobQBhCDgNuRAyDg7qeq7dPJAg==",
+            "channel_index": 2,
+            "received_at": "2026-05-11T08:53:33.813176803Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 9,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "868500000",
+          "timestamp": 2434529884,
+          "time": "2026-05-11T08:48:36.025240Z"
+        },
+        "received_at": "2026-05-11T08:53:33.843681567Z",
+        "consumed_airtime": "0.185344s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3VQGKVNJQGZND6MCWVS83"
+    ],
+    "origin": "ip-10-100-12-110.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3VQQ4HWJRP8Q2NG27QB59"
+  },
+  {
+    "name": "ns.up.data.process",
+    "time": "2026-05-11T08:53:34.049046902Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "esp32s3-2",
+          "application_ids": {
+            "application_id": "esp32-adaptive-sampler"
+          },
+          "dev_eui": "70B3D57ED007763F",
+          "join_eui": "0000000000000000",
+          "dev_addr": "260BF6DE"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.UplinkMessage",
+      "raw_payload": "QN72CyaDAQAG/wQBOPZ9t5YYSxc=",
+      "payload": {
+        "m_hdr": {
+          "m_type": "UNCONFIRMED_UP"
+        },
+        "mic": "lhhLFw==",
+        "mac_payload": {
+          "f_hdr": {
+            "dev_addr": "260BF6DE",
+            "f_ctrl": {
+              "adr": true
+            },
+            "f_cnt": 1,
+            "f_opts": "Bv8E"
+          },
+          "f_port": 1,
+          "frm_payload": "OPZ9tw==",
+          "full_f_cnt": 1
+        }
+      },
+      "settings": {
+        "data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 9,
+            "coding_rate": "4/5"
+          }
+        },
+        "frequency": "868500000",
+        "timestamp": 2434529884,
+        "time": "2026-05-11T08:48:36.025240Z"
+      },
+      "rx_metadata": [
+        {
+          "gateway_ids": {
+            "gateway_id": "mikrotik-ttn-loar-diag",
+            "eui": "50303541603F4750"
+          },
+          "time": "2026-05-11T08:48:36.025240Z",
+          "timestamp": 2434529884,
+          "rssi": -109,
+          "channel_rssi": -109,
+          "snr": 6,
+          "location": {
+            "latitude": 41.89116664254687,
+            "longitude": 12.503255216024609,
+            "altitude": 20,
+            "source": "SOURCE_REGISTRY"
+          },
+          "uplink_token": "CiQKIgoWbWlrcm90aWstdHRuLWxvYXItZGlhZxIIUDA1QWA/R1AQ3PTviAkaDAiNsobQBhCDgNuRAyDg7qeq7dPJAg==",
+          "channel_index": 2,
+          "received_at": "2026-05-11T08:53:33.813176803Z"
+        }
+      ],
+      "received_at": "2026-05-11T08:53:33.843681567Z",
+      "correlation_ids": [
+        "gs:uplink:01KRB3VQGKVNJQGZND6MCWVS83"
+      ],
+      "device_channel_index": 2,
+      "consumed_airtime": "0.185344s"
+    },
+    "correlation_ids": [
+      "gs:uplink:01KRB3VQGKVNJQGZND6MCWVS83"
+    ],
+    "origin": "ip-10-100-5-36.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01KRB3VQQ1JWK7YBAV6EB8WZGB"
+  }
+]
