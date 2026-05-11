@@ -24,14 +24,15 @@
 #define INA219_SCL  42   // J3 pin 7
 
 // ======= EXPERIMENT =======
-#define MAX_SAMPLE_RATE     1000.0f
-#define FFT_SIZE            2048
-#define WINDOW_SECS         5.0f
-#define NUM_WINDOWS         5
-#define FILTER_WINDOW       21
-#define ZSCORE_THRESH       3.0f
-#define HAMPEL_THRESH       3.0f
-#define BENCHMARK_SAMPLES   10000
+#define MAX_SAMPLE_RATE      1000.0f
+#define FFT_SIZE             2048
+#define WINDOW_SECS          5.0f
+#define NUM_WINDOWS          5
+#define FILTER_WINDOW        21
+#define TRADEOFF_WINDOW_SECS 30
+#define ZSCORE_THRESH        3.0f
+#define HAMPEL_THRESH        3.0f
+#define BENCHMARK_SAMPLES    10000
 
 // ======= TASK STACK SIZES =======
 #define STACK_SAMPLER   12288   // 12KB - holds 2048 float buffer
@@ -48,4 +49,5 @@
 #define PRIO_MONITOR    1
 
 // ======= MONITOR =======
-#define INA219_POLL_MS  100     // INA219 read interval
+#define INA219_POLL_MS  100         // INA219 read interval
+#define LOG_SIGNAL_TIMESERIES true  // write some timeseries data to Serial to generate plots

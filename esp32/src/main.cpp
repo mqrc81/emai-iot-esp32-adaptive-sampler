@@ -380,6 +380,22 @@ static void samplerTask(void *param) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 
+    // Log signal timeseries data
+    if (LOG_SIGNAL_TIMESERIES) {
+        logMsg("[SAMPLER] ========== signal 1 timeseries ==========");
+        logMsg("t,clean,noisy,anomaly");
+        for (int i = 0; i < MAX_SAMPLE_RATE; i++) {
+            float t = i / MAX_SAMPLE_RATE;
+            int isAnomaly;
+            SignalConfig cfg = DEFAULT_NOISY_CONFIG;
+            cfg.anomalyProb = 0.02f; // p=2% matches simulation plot
+            float noisy = generateNoisySignal(t, cfg, &isAnomaly);
+            float clean = generateSignal(t, SIGNAL_1);
+            logFmt("%.4f,%.4f,%.4f,%d", t, clean, noisy, isAnomaly);
+        }
+        logMsg("[SAMPLER] =========================================");
+    }
+
     // ===== PHASE 4: NOISY SIGNAL — MULTIPLE INJECTION RATES =====
     float anomalyProbs[] = {0.01f, 0.05f, 0.10f};
     int filterTypes[] = {1, 2}; // 1=zscore, 2=hampel
@@ -491,7 +507,7 @@ static void samplerTask(void *param) {
         SignalConfig noisyCfg = DEFAULT_NOISY_CONFIG;
         noisyCfg.anomalyProb = prob;
 
-        int totalSamples = (int) (adaptiveRate * WINDOW_SECS);
+        int totalSamples = (int) (adaptiveRate * TRADEOFF_WINDOW_SECS);
         float *samples = (float *) malloc(totalSamples * sizeof(float));
         int *gt = (int *) malloc(totalSamples * sizeof(int));
 
