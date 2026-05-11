@@ -39,30 +39,11 @@ bool mqttEnsureConnected(const char *user, const char *password) {
     return false;
 }
 
-void mqttPublishWindow(const WindowResult &r, const PowerReading &power) {
+void mqttPublishRaw(const char *payload, int len, int bufSize) {
     if (!s_mqtt.connected()) return;
 
-    char payload[512];
-    int len = snprintf(payload, sizeof(payload),
-                       "{\"average\":%.6f,\"adaptive_rate\":%.2f,\"sample_count\":%d,"
-                       "\"compute_ms\":%.4f,\"timestamp_us\":%lld,"
-                       "\"signal\":%d,\"filter\":%d,\"anomaly_prob\":%.2f,"
-                       "\"tpr\":%.4f,\"fpr\":%.4f,\"mean_error\":%.6f,"
-                       "\"tp\":%d,\"fp\":%d,\"fn\":%d,\"tn\":%d,"
-                       "\"window_index\":%d,\"window_size\":%d,\"bytes_adaptive\":%d,\"bytes_oversampled\":%d,"
-                       "\"current_ma\":%.2f,\"voltage_v\":%.3f,"
-                       "\"power_mw\":%.2f,\"energy_mj\":%.4f,\"phase\":\"%s\"}",
-                       r.average, r.adaptiveRate, r.sampleCount,
-                       r.computeMs, r.timestampUs,
-                       r.signalIndex, r.filterType, r.anomalyProb,
-                       r.tpr, r.fpr, r.meanError,
-                       r.tp, r.fp, r.fn, r.tn,
-                       r.windowIndex, r.windowSize, r.bytesAdaptive, r.bytesOversampled,
-                       power.currentMa, power.voltageV,
-                       power.powerMw, power.energyMj, power.phase);
-
-    if (len >= (int) sizeof(payload)) {
-        logMsg("[MQTT] payload truncated — not publishing");
+    if (len >= bufSize) {
+        logFmt("[MQTT] payload truncated — not publishing (%d >= %d)", len, bufSize);
         return;
     }
 
@@ -70,27 +51,36 @@ void mqttPublishWindow(const WindowResult &r, const PowerReading &power) {
         logMsg("[MQTT] publish failed");
 }
 
-void mqttPublishPower(const PowerReading &power) {
-    if (!s_mqtt.connected()) return;
-
-    char payload[256];
+void mqttPublishWindow(const WindowResult &r, const PowerReading &power) {
+    char payload[512];
     int len = snprintf(payload, sizeof(payload),
-                       "{\"current_ma\":%.2f,\"voltage_v\":%.3f,"
-                       "\"power_mw\":%.2f,\"energy_mj\":%.4f,\"phase\":\"%s\"}",
+                       "{\"phase\":\"%s\","
+                       "\"idx\":%d,\"average\":%.6f,\"adaptive_rate\":%.2f,\"sample_count\":%d,"
+                       "\"compute_ms\":%.4f,\"timestamp_us\":%lld,"
+                       "\"signal\":%d,\"filter\":%d,\"anomaly_prob\":%.2f,"
+                       "\"tpr\":%.4f,\"fpr\":%.4f,\"mean_err\":%.6f,"
+                       "\"tp\":%d,\"fp\":%d,\"fn\":%d,\"tn\":%d,"
+                       "\"bytes\":%d,"
+                       "\"current_ma\":%.2f,\"voltage_v\":%.3f,"
+                       "\"power_mw\":%.2f,\"energy_mj\":%.4f}",
+                       power.phase,
+                       r.windowIndex, r.average, r.adaptiveRate, r.sampleCount,
+                       r.computeMs, r.timestampUs,
+                       r.signalIndex, r.filterType, r.anomalyProb,
+                       r.tpr, r.fpr, r.meanError,
+                       r.tp, r.fp, r.fn, r.tn,
+                       r.bytes,
                        power.currentMa, power.voltageV,
-                       power.powerMw, power.energyMj, power.phase);
+                       power.powerMw, power.energyMj);
 
-    if (len >= (int) sizeof(payload)) {
-        logMsg("[MQTT] power payload truncated");
-        return;
-    }
-
-    s_mqtt.publish(MQTT_TOPIC "/power", payload);
+    mqttPublishRaw(payload, len, sizeof(payload));
 }
 
-void mqttPublishRaw(const char *topic, const char *payload) {
-    if (!s_mqtt.connected()) return;
-    s_mqtt.publish(topic, payload);
+void mqttPublishFFTComparison(const WindowResult &r) {
+    // TODO
+    char payload[1] = "";
+    int len = 1;
+    mqttPublishRaw(payload, len, sizeof(payload));
 }
 
 void mqttLoop() {

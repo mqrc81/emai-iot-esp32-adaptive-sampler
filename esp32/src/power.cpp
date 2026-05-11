@@ -35,8 +35,12 @@ void powerResetEnergy() {
 }
 
 PowerReading powerRead(const char *phase) {
+    PowerReading r{};
+    strncpy(r.phase, phase, sizeof(r.phase) - 1);
+    r.phase[sizeof(r.phase) - 1] = '\0'; // TODO: move phase out of powerRead() into WindowResult directly
+
     if (!xSemaphoreTake(s_powerMutex, pdMS_TO_TICKS(100)))
-        return {};
+        return r;
 
     uint64_t now = esp_timer_get_time();
     float elapsedS = (now - s_lastReadUs) / 1e6f;
@@ -48,13 +52,10 @@ PowerReading powerRead(const char *phase) {
 
     s_accumulatedEnergyMj += powerMw * elapsedS;
 
-    PowerReading r{};
     r.currentMa = currentMa;
     r.voltageV = voltageV;
     r.powerMw = powerMw;
     r.energyMj = s_accumulatedEnergyMj;
-    strncpy(r.phase, phase, sizeof(r.phase) - 1);
-    r.phase[sizeof(r.phase) - 1] = '\0';
 
     xSemaphoreGive(s_powerMutex);
     return r;

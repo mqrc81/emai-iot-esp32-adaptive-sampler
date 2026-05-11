@@ -61,7 +61,15 @@ static int64_t nowUs() {
     return (int64_t) tv.tv_sec * 1000000LL + tv.tv_usec;
 }
 
+static void waitForResultsQueueDrain() {
+    while (uxQueueMessagesWaiting(s_resultQueue) > 0) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    vTaskDelay(pdMS_TO_TICKS(200)); // extra buffer for in-flight MQTT publish
+}
+
 static void setPhase(const char *phase) {
+    waitForResultsQueueDrain(); // prevent mislabeled phases
     if (xSemaphoreTake(s_phaseMutex, pdMS_TO_TICKS(100))) {
         strncpy(s_currentPhase, phase, sizeof(s_currentPhase) - 1);
         s_currentPhase[sizeof(s_currentPhase) - 1] = '\0';
@@ -136,13 +144,13 @@ static void commTask(void *param) {
         // Block up to 5s waiting for result — then loop for keepalive
         if (xQueueReceive(s_resultQueue, &r, pdMS_TO_TICKS(5000))) {
             PowerReading power = {};
-            xQueueReceive(s_powerQueue, &power, pdMS_TO_TICKS(100));
+            xQueuePeek(s_powerQueue, &power, pdMS_TO_TICKS(100));
 
             mqttEnsureConnected(MQTT_USER, MQTT_PASS);
             mqttPublishWindow(r, power);
 
             // Send windowed average via LoRaWAN — only for last window of each phase to respect duty cycle
-            if (r.windowIndex == NUM_WINDOWS - 1 && r.windowSize == 0) {
+            if (r.windowIndex == NUM_WINDOWS - 1 && r.signalIndex >= 0) {
                 loraSendWindow(r);
             }
         }
@@ -211,6 +219,7 @@ static void filterTask(void *param) {
         int evaluated = counted > 0 ? counted : 1;
 
         WindowResult r{};
+        r.windowIndex = wb.windowIndex;
         r.average = average;
         r.adaptiveRate = wb.adaptiveRate;
         r.sampleCount = wb.size;
@@ -226,9 +235,7 @@ static void filterTask(void *param) {
         r.fp = fp;
         r.fn = fn;
         r.tn = tn;
-        r.windowIndex = wb.windowIndex;
-        r.bytesAdaptive = r.sampleCount * sizeof(float);
-        r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
+        r.bytes = r.sampleCount * sizeof(float);
 
         xQueueSend(s_resultQueue, &r, portMAX_DELAY);
 
@@ -266,6 +273,8 @@ static void fftTask(void *param) {
 // ======= SAMPLER TASK =======
 // Runs the full experiment sequentially
 static void samplerTask(void *param) {
+    vTaskDelay(pdMS_TO_TICKS(3000));
+
     float adaptiveRate = MAX_SAMPLE_RATE;
 
     // ===== PHASE 1: BENCHMARK MAX RATE =====
@@ -526,7 +535,8 @@ static void samplerTask(void *param) {
                 float meanErr = totalError / evaluated;
 
                 WindowResult r = {};
-                r.adaptiveRate = adaptiveRate;
+                r.windowIndex = wi;
+                r.adaptiveRate = (float) W; // reuse field for window size W
                 r.computeMs = timeMs;
                 r.timestampUs = nowUs();
                 r.signalIndex = -1; // sentinel for trade-off phase
@@ -535,15 +545,12 @@ static void samplerTask(void *param) {
                 r.tpr = tpr;
                 r.fpr = fpr;
                 r.meanError = meanErr;
-                r.sampleCount = totalSamples;
+                r.sampleCount = evaluated;
                 r.tp = tp;
                 r.fp = fp;
                 r.fn = fn;
                 r.tn = tn;
-                r.windowIndex = wi;
-                r.windowSize = W;
-                r.bytesAdaptive = W * sizeof(float);
-                r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
+                r.bytes = W * (int) sizeof(float);
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
 
@@ -571,23 +578,22 @@ static void samplerTask(void *param) {
                 float meanErr = totalError / evaluated;
 
                 WindowResult r = {};
-                r.adaptiveRate = (float) W;
+                r.windowIndex = wi;
+                r.adaptiveRate = (float) W; // reuse field for window size W
                 r.computeMs = timeMs;
                 r.timestampUs = nowUs();
-                r.signalIndex = -1;
+                r.signalIndex = -1; // sentinel for trade-off phase
                 r.filterType = 2;
                 r.anomalyProb = prob;
                 r.tpr = tpr;
                 r.fpr = fpr;
                 r.meanError = meanErr;
-                r.sampleCount = W * (int) sizeof(float);
+                r.sampleCount = evaluated;
                 r.tp = tp;
                 r.fp = fp;
                 r.fn = fn;
                 r.tn = tn;
-                r.windowIndex = wi;
-                r.bytesAdaptive = r.sampleCount * sizeof(float);
-                r.bytesOversampled = (int) (MAX_SAMPLE_RATE * WINDOW_SECS) * sizeof(float);
+                r.bytes = W * (int) sizeof(float);
                 xQueueSend(s_resultQueue, &r, portMAX_DELAY);
             }
         }
@@ -597,10 +603,7 @@ static void samplerTask(void *param) {
     }
 
 done:
-    while (uxQueueMessagesWaiting(s_resultQueue) > 0) {
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-    vTaskDelay(pdMS_TO_TICKS(2000)); // extra buffer for in-flight MQTT publishes
+    waitForResultsQueueDrain();
     s_experimentDone.store(true);
     logMsg("[SAMPLER] experiment complete");
     vTaskDelete(nullptr);
@@ -611,7 +614,7 @@ void setup() {
     heltec_setup(); // initialises radio, must be first
     delay(1000);
     heltec_ve(true);
-    delay(1000);
+    delay(5000);
 
     serialMutex = xSemaphoreCreateMutex();
     s_phaseMutex = xSemaphoreCreateMutex();
@@ -624,22 +627,23 @@ void setup() {
     Wire1.begin(INA219_SDA, INA219_SCL);
     bool powerOk = powerInit();
     if (!powerOk) logMsg("[BOOT] INA219 not found — continuing without power measurement");
-    oledStatus(1, powerOk ? "Power OK" : "Power FAIL");
+    oledClear();
+    oledStatus(0, powerOk ? "Power OK" : "Power FAIL");
 
     // WiFi + NTP
     bool wifiOK = connectWiFi();
-    oledStatus(2, wifiOK ? "WiFi OK" : "WiFi FAIL");
+    oledStatus(1, wifiOK ? "WiFi OK" : "WiFi FAIL");
     syncNTP();
 
     // MQTT
     mqttInit(MQTT_HOST, MQTT_PORT, MQTT_CLIENT);
     bool mqttOK = mqttEnsureConnected(MQTT_USER, MQTT_PASS);
-    oledStatus(3, mqttOK ? "MQTT OK" : "MQTT FAIL");
+    oledStatus(2, mqttOK ? "MQTT OK" : "MQTT FAIL");
 
     // LoRa
     loraInit();
     bool loraOK = loraJoin(); // blocks until joined or fails
-    oledStatus(4, loraOK ? "LoRa OK" : "LoRa FAIL");
+    oledStatus(3, loraOK ? "LoRa OK" : "LoRa FAIL");
 
     // Create queues
     s_sampleQueue = xQueueCreate(1, sizeof(SampleBuffer));
@@ -656,8 +660,6 @@ void setup() {
     xTaskCreate(samplerTask, "Sampler", STACK_SAMPLER, nullptr, PRIO_SAMPLER, nullptr);
 
     logMsg("[BOOT] all tasks started");
-
-    delay(1000);
 }
 
 void loop() {
