@@ -1,0 +1,49 @@
+======= ENERGY SAVINGS =========
+Benchmark baseline (~106 kHz): 25.57% reduction
+Signal 1 (9.77 Hz): 13.29% reduction
+Signal 2 (3.91 Hz): 23.89% reduction
+Saved: plots/energy_savings.png
+python: can't open file '/Users/ms/Projects/emai-iot-esp32-adaptive-sampler/./scripts/plot_tpr_fpr.py': [Errno 2] No such file or directory
+======= WINDOW TRADEOFF =========
+    W   Z time(ms)   H time(ms)    Z TPR    H TPR    Z FPR    H FPR   Mem(B)
+-------------------------------------------------------------------------
+    5         7.17         7.88    0.000    0.333    0.000    0.029       20
+   11         7.09        10.38    0.000    0.500    0.000    0.000       44
+   21         7.14        15.13    0.273    0.364    0.000    0.000       84
+   51         7.21        30.70    0.182    0.273    0.000    0.000      204
+  101         6.94        49.16    0.333    0.333    0.000    0.000      404
+  201         4.50        50.80    0.000    0.000    0.000    0.000      804
+======= ADAPTIVE RATES =========
+Signal                           Adaptive(Hz)    Max(Hz)   Reduction   Samples/5s
+-------------------------------------------------------------------------------
+2sin(2π·3t)+4sin(2π·5t)                  9.77       1000      102.4x           48
+4sin(2π·2t)                              3.91       1000      255.8x           19
+2sin(2π·10t)+3sin(2π·45t)               89.84       1000       11.1x          449
+======= DATA VOLUME =========
+Signal                   Formula                         Adaptive(B)  Baseline(B)  Reduction
+------------------------------------------------------------------------------------------
+Benchmark                (tight loop, no window)                 N/A        20000          —
+Signal 1 (9.77 Hz)       2sin(2π·3t)+4sin(2π·5t)                 192        20000     104.2x
+Signal 2 (3.91 Hz)       4sin(2π·2t)                              76        20000     263.2x
+Signal 3 (89.84 Hz)      2sin(2π·10t)+3sin(2π·45t)              1796        20000      11.1x
+Saved: plots/current_timeline.png
+Saved: plots/mean_error.png
+Saved: plots/e2e_latency.png
+
+======= WINDOWED AVERAGE (CLEAN) =========
+Signal                                    W0       W1       W2       W3       W4     Mean      Std
+2sin(2π·3t)+4sin(2π·5t)              0.0518  0.0518  0.0518  0.0518  0.0518   0.0518   0.0000
+4sin(2π·2t)                          0.0997  0.0997  0.0997  0.0997  0.0997   0.0997   0.0000
+2sin(2π·10t)+3sin(2π·45t)            0.0025  0.0025  0.0025  0.0025  0.0025   0.0025   0.0000
+
+======= WINDOWED AVERAGE (NOISY) =========
+Phase        Filter         W0       W1       W2       W3       W4     Mean      Std
+------------------------------------------------------------------------------------
+Z p=1%       1        -0.1298  0.0493  0.0304  0.0677  0.2793   0.0594   0.1305
+H p=1%       2         0.0037  0.0634  0.1125  0.0637 -0.1393   0.0208   0.0872
+Z p=5%       1         0.1014 -0.0409  1.0431 -0.4670 -0.0044   0.1264   0.4977
+H p=5%       2         0.0344  0.4405 -0.0051  0.0547  0.0047   0.1058   0.1687
+Z p=10%      1         0.2065 -0.1003  1.3104 -0.6253  1.3689   0.4321   0.7876
+H p=10%      2         0.2725  0.3782 -0.2666 -0.3184  0.0904   0.0312   0.2803
+Saved: plots/tpr_vs_w.png
+Saved: plots/signal_noisy.png

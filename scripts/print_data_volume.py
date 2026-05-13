@@ -47,11 +47,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Output:
-# Signal                   Formula                         Adaptive(B)  Baseline(B)  Reduction
-# ------------------------------------------------------------------------------------------
-# Benchmark                (tight loop, no window)                 N/A        20000          —
-# Signal 1 (9.77 Hz)       2sin(2π·3t)+4sin(2π·5t)                 192        20000     104.2x
-# Signal 2 (3.91 Hz)       4sin(2π·2t)                              76        20000     263.2x
-# Signal 3 (89.84 Hz)      2sin(2π·10t)+3sin(2π·45t)              1796        20000      11.1x

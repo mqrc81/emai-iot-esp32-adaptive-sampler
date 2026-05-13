@@ -88,8 +88,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# Output:
-# Benchmark (~106 kHz): 28.97% reduction
-# Signal 1 (9.77 Hz): 31.07% reduction
-# Signal 2 (3.91 Hz): 32.26% reduction
