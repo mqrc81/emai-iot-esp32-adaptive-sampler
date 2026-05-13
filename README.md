@@ -115,7 +115,7 @@ python plot_tpr_vs_w.py ../logs/mqtt_10.txt
 python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 ```
 
-**Configuration** (Rename `src/config.hpp.example` to `src/config.hpp`):
+**Configuration** (rename `src/config.hpp.example` to `src/config.hpp`):
 
 - WiFi SSID/password
 - MQTT broker IP and port
@@ -156,9 +156,9 @@ python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 │                 │  Heap-allocates FFT buffers (malloc)
 └────────┬────────┘
          │ rateQueue (size 1) — float (adaptive rate back to SamplerTask)
-
-SamplerTask → windowQueue (size 2) → FilterTask
-         ↓
+         |
+         | SamplerTask → windowQueue (size 2) → FilterTask
+         ▼
 ┌─────────────────┐
 │  FilterTask     │  Priority 2 — 8KB stack
 │                 │  Z-score / Hampel filtering
