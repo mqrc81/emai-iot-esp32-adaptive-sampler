@@ -8,32 +8,13 @@ power consumption across the full experiment, with phase boundaries
 and WiFi transmission spikes clearly visible.
 """
 
-import json
 import sys
 from pathlib import Path
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
-
-def load_mqtt(path: str) -> list[dict]:
-    records = []
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            parts = line.split(" ", 2)
-            if len(parts) < 3:
-                continue
-            try:
-                payload = json.loads(parts[2])
-                payload["_mac_ts_us"] = int(parts[0])
-                records.append(payload)
-            except (json.JSONDecodeError, ValueError):
-                continue
-    return records
-
+from load_mqtt import load_mqtt
 
 # Colour map for phases
 PHASE_COLORS = {
@@ -52,15 +33,14 @@ def main():
     if len(sys.argv) <= 1: raise Exception("path to mqtt.txt file not specified")
     path = sys.argv[1]
     records = load_mqtt(path)
+    records = sorted(records, key=lambda r: r["timestamp_us"])
 
-    # Sort by mac timestamp
-    records = sorted(records, key=lambda r: r["_mac_ts_us"])
     if not records:
         print("No records found.")
         return
 
-    t0_us = records[0]["_mac_ts_us"]
-    times_s = [(r["_mac_ts_us"] - t0_us) / 1e6 for r in records]
+    t0_us = records[0]["timestamp_us"]
+    times_s = [(r["timestamp_us"] - t0_us) / 1e6 for r in records]
     currents = [r.get("current_ma", 0) for r in records]
     voltages = [r.get("voltage_v", 0) for r in records]
     phases = [r.get("phase", "") for r in records]

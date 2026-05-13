@@ -1,19 +1,12 @@
 #include "signal.hpp"
 #include <cmath>
+#include "esp_random.h"
 
 #define TWO_PI_F (2.0f * M_PI)
 
-// ======= SEEDABLE LCG =======
 
-static uint32_t lcgState = 42;
-
-static uint32_t lcgRand() {
-    lcgState = lcgState * 1664525u + 1013904223u;
-    return lcgState;
-}
-
-static float lcgRandFloat() {
-    return (float) lcgRand() / (float) UINT32_MAX;
+static float esp_random_float() {
+    return (float) esp_random() / (float) UINT32_MAX;
 }
 
 // ======= SIGNAL DEFINITIONS =======
@@ -58,8 +51,8 @@ float generateSignal(float t, const SignalDef &def) {
 
 // Box-Muller transform for Gaussian noise
 static float gaussianNoise(float stdDev) {
-    float u1 = lcgRandFloat() * (1.0f - 1e-7f) + 1e-7f; // avoid log(0)
-    float u2 = lcgRandFloat();
+    float u1 = esp_random_float() * (1.0f - 1e-7f) + 1e-7f; // avoid log(0)
+    float u2 = esp_random_float();
     float z = sqrtf(-2.0f * logf(u1)) * cosf(TWO_PI_F * u2);
     return z * stdDev;
 }
@@ -70,10 +63,10 @@ float generateNoisySignal(float t, const SignalConfig &config, int *anomalyOut) 
 
     s += gaussianNoise(config.noiseStdDev);
 
-    float r = lcgRandFloat();
+    float r = esp_random_float();
     if (r < config.anomalyProb) {
-        float magnitude = config.anomalyMin + lcgRandFloat() * (config.anomalyMax - config.anomalyMin);
-        if (lcgRand() % 2) magnitude = -magnitude;
+        float magnitude = config.anomalyMin + esp_random_float() * (config.anomalyMax - config.anomalyMin);
+        if (esp_random() % 2) magnitude = -magnitude;
         s += magnitude;
         if (anomalyOut) *anomalyOut = 1;
     } else {
