@@ -4,15 +4,13 @@
 
 1. [System Overview](#1-system-overview)
 2. [Hardware Setup](#2-hardware-setup)
-3. [Software Architecture](#3-software-architecture)
-4. [Experiment Configuration](#4-experiment-configuration)
-5. [FreeRTOS Task Architecture](#5-freertos-task-architecture)
-6. [Experiment Phases](#6-experiment-phases)
-7. [Requirements](#7-requirements)
-8. [Bonus: Three Input Signals](#8-bonus-three-input-signals)
-9. [Bonus: Noisy Signal and Anomaly Detection](#9-bonus-noisy-signal-and-anomaly-detection)
-10. [Limitations and Design Decision](#10-limitations-and-design-decisions)
-11. [LLM Documentation](#11-llm-documentation)
+3. [How to Run](#3-how-to-run)
+4. [Task Architecture and Flow](#4-task-architecture-and-flow)
+5. [Requirements](#5-requirements)
+6. [Bonus: Three Input Signals](#6-bonus-three-input-signals)
+7. [Bonus: Noisy Signal and Anomaly Detection](#7-bonus-noisy-signal-and-anomaly-detection)
+8. [Limitations and Design Decision](#8-limitations-and-design-decisions)
+9. [LLM Documentation](#9-llm-documentation)
 
 ---
 
@@ -74,14 +72,14 @@ other system components — sampling, FFT, filtering, communication, and energy 
 
 ---
 
-## 3. Software Architecture
+## 3. How to Run
 
 ### 3.1 Development Environment
 
 - **PlatformIO** with Arduino framework, board target `heltec_wifi_lora_32_V3`
 - C++11 with FreeRTOS primitives
 
-### 3.2 How to Run
+### 3.2 Running The Experiment
 
 **Flash and monitor:**
 
@@ -115,16 +113,15 @@ python plot_tpr_vs_w.py ../logs/mqtt_10.txt
 python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 ```
 
+### 3.3 Configuration
+
 **Configuration** (rename `src/config.hpp.example` to `src/config.hpp`):
 
 - WiFi SSID/password
 - MQTT broker IP and port
 - TTN DevEUI, JoinEUI, AppKey
-- Experiment parameters
 
----
-
-## 4. Experiment Configuration
+**Experiment parameters:**
 
 | Parameter              | Value   | Justification                                                        |
 |------------------------|---------|----------------------------------------------------------------------|
@@ -140,7 +137,9 @@ python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 
 ---
 
-## 5. FreeRTOS Task Architecture
+## 4. Task Architecture and Flow
+
+### 4.1 FreeRTOS Task Architecture
 
 ```
 ┌─────────────────┐
@@ -182,9 +181,7 @@ SamplerTask → windowQueue (size 2) → FilterTask
 └─────────────────┘
 ```
 
----
-
-## 6. Experiment Phases
+### 4.2 Experiment Phases
 
 | Phase Label       | Description                                                          |
 |-------------------|----------------------------------------------------------------------|
@@ -197,9 +194,9 @@ SamplerTask → windowQueue (size 2) → FilterTask
 
 ---
 
-## 7. Requirements
+## 5. Requirements
 
-### 7.1 Input Signal
+### 5.1 Input Signal
 
 Three input signals are used:
 
@@ -211,7 +208,7 @@ Three input signals are used:
 
 ![signal_noisy.png](plots/signal_noisy.png)
 
-### 7.2 Maximum Sampling Frequency
+### 5.2 Maximum Sampling Frequency
 
 The benchmark phase runs 10'000 signal generation calls in a tight loop with no delays, measuring hardware throughput
 via `esp_timer_get_time()`.
@@ -221,7 +218,7 @@ via `esp_timer_get_time()`.
 **Note:** The practical FreeRTOS task-driven maximum rate is 1000Hz, limited by `configTICK_RATE_HZ=1000`. The benchmark
 demonstrates hardware capability; 1000Hz is the operational ceiling for task-scheduled sampling.
 
-### 7.3 Optimal Sampling Frequency via FFT
+### 5.3 Optimal Sampling Frequency via FFT
 
 2048 samples are collected at 1000Hz. FFTTask applies a Hamming window, computes the FFT using `ArduinoFFT<float>`,
 identifies the dominant frequency bin (excluding DC), and sets the optimal rate as `2 × dominantFrequency` (Nyquist
@@ -238,7 +235,7 @@ criterion).
 The 4.88Hz reading for Signal 1 (true dominant: 5Hz) reflects FFT bin quantization at 0.488Hz/bin resolution (the
 nearest bin below 5Hz).
 
-### 7.4 Windowed Average
+### 5.4 Windowed Average
 
 The windowed average is computed over 5-second windows at the adaptive rate. FilterTask sums all samples (including edge
 samples outside the filter half-window) and divides by total count.
@@ -255,7 +252,7 @@ Std=0.0000 confirms deterministic signal generation and consistent sampling at t
 
 **Per-window compute time:** 0.20ms (Signal 1), 0.01ms (Signal 2), 8.75ms (Signal 3) — scales with sample count.
 
-### 7.5 MQTT over WiFi to Edge Server
+### 5.5 MQTT over WiFi to Edge Server
 
 The ESP32-S3 connects to a WiFi network (iPhone hotspot) and publishes JSON payloads to a local Mosquitto broker on the
 same network. All MQTT publishing is routed exclusively through CommTask.
@@ -269,7 +266,7 @@ Sample MQTT message:
 1778671981321232 iot/window {"phase":"SIG1_WINDOW","idx":3,"average":0.099742,"adaptive_rate":3.91,"sample_count":19,"compute_ms":0.0110,"timestamp_us":1778671980547332,"signal":1,"filter":0,"anomaly_prob":0.00,"tpr":0.0000,"fpr":0.0000,"mean_err":0.000000,"tp":0,"fp":0,"fn":0,"tn":0,"bytes":76,"current_ma":71.10,"voltage_v":5.104,"power_mw":362.89,"energy_mj":8212.5537}
 ```
 
-### 7.6 LoRaWAN + TTN
+### 5.6 LoRaWAN + TTN
 
 The SX1262 performs OTAA join with TTN using RadioLib's `LoRaWANNode` class. Keys are configured as compile-time
 constants. The EU868 frequency plan is used at SF9BW125.
@@ -287,7 +284,7 @@ experiment.
 expected uplinks transmitted — the 60-second minimum interval and experiment
 duration limited the total count.
 
-### 7.7 Energy Savings
+### 5.7 Energy Savings
 
 ![energy_savings.png](plots/energy_savings.png)
 
@@ -321,7 +318,7 @@ collection energy for large W.
 because *"in some cases, the optimized sampling frequency cannot be employed due to the latencies of sleeping
 policies."*
 
-### 7.8 Per-Window Execution Time
+### 5.8 Per-Window Execution Time
 
 Compute times are measured via `esp_timer_get_time()` in FilterTask:
 
@@ -334,7 +331,7 @@ Compute times are measured via `esp_timer_get_time()` in FilterTask:
 | Hampel (W=21, 28 evaluated)       | ~15ms        |
 | Hampel (W=201, 92 evaluated)      | ~51 ms       |
 
-### 7.9 Data Volume
+### 5.9 Data Volume
 
 | Signal              | Adaptive (B) | Oversampled (B) | Reduction  |
 |---------------------|--------------|-----------------|------------|
@@ -344,7 +341,7 @@ Compute times are measured via `esp_timer_get_time()` in FilterTask:
 
 Oversampled baseline = 1000Hz × 5s × 4 bytes = 20'000 bytes per window.
 
-### 7.10 End-to-End Latency
+### 5.10 End-to-End Latency
 
 **E2E latency** is measured by embedding a NTP-synced Unix timestamp (`gettimeofday()`) in each payload, compared
 against the Mac-side receipt timestamp.
@@ -363,7 +360,7 @@ network.
 
 ---
 
-## 8. Bonus: Three Input Signals
+## 6. Bonus: Three Input Signals
 
 Three signals with different frequency content demonstrate how dominant frequency affects the adaptive rate:
 
@@ -376,9 +373,9 @@ reduction (256×), albeit with a very low sample count (19 per window).
 
 ---
 
-## 9. Bonus: Noisy Signal and Anomaly Detection
+## 7. Bonus: Noisy Signal and Anomaly Detection
 
-### 9.1 Noisy Signal Model
+### 7.1 Noisy Signal Model
 
 ```
 s(t) = 2sin(2π·3t) + 4sin(2π·5t) + n(t) + A(t)
@@ -390,7 +387,7 @@ s(t) = 2sin(2π·3t) + 4sin(2π·5t) + n(t) + A(t)
 Random generation uses a seeded LCG (seed=42) for deterministic reproducibility. `rand()` was avoided due to FreeRTOS
 thread-safety issues.
 
-### 9.2 Filter Implementations
+### 7.2 Filter Implementations
 
 **Z-score filter (O(W)):** flags sample if `|x − μ| / σ > 3.0`, replaces with window mean. Assumes Gaussian noise,
 sensitive to outlier contamination of mean.
@@ -398,7 +395,7 @@ sensitive to outlier contamination of mean.
 **Hampel filter (O(W log W)):** flags sample if `|x − median| > 3.0 × 1.4826 × MAD`, replaces with window median. Robust
 to high contamination — median unaffected by up to 50% outliers.
 
-### 9.3 Detection Performance
+### 7.3 Detection Performance
 
 Per-window TPR is limited by sample count: at 9.77Hz over 5s, only 28 samples are evaluated per window (
 FILTER_WINDOW=21, half=10). At p=1%, expected anomalies per window ≈ 0.28 — statistically insufficient for reliable
@@ -421,7 +418,7 @@ Mean error increases monotonically with injection rate for both filters. **Hampe
 MAE** at p=5% and p=10%, with the crossover clearly visible in the line chart. At p=1% Z-score has slightly lower MAE
 due to the sinusoidal mean being closer to the true value than the median for low contamination.
 
-### 9.4 FFT Contamination Analysis
+### 7.4 FFT Contamination Analysis
 
 A dedicated 128-sample buffer at the adaptive rate is analysed pre- and post-filter for each injection rate:
 
@@ -435,7 +432,7 @@ Sparse anomalies do not significantly shift the dominant frequency estimate — 
 FFT spectrum even at p=10%. Filtering has no measurable effect on the derived adaptive rate, and therefore no energy
 impact in this scenario.
 
-### 9.5 Window Size Trade-off
+### 7.5 Window Size Trade-off
 
 A 30-second buffer (~293 samples at 9.77Hz) is used at p=5% to support all window sizes including W=201.
 
@@ -467,7 +464,7 @@ and the main experiment configuration.
 
 ---
 
-## 10. Limitations and Design Decisions
+## 8. Limitations and Design Decisions
 
 | Limitation                     | Explanation                                                                                                                                                |
 |--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
