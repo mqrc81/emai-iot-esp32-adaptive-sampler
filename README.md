@@ -157,7 +157,8 @@ python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 └────────┬────────┘
          │ rateQueue (size 1) — float (adaptive rate back to SamplerTask)
          |
-         | SamplerTask → windowQueue (size 2) → FilterTask
+SamplerTask → windowQueue (size 2) → FilterTask
+         | 
          ▼
 ┌─────────────────┐
 │  FilterTask     │  Priority 2 — 8KB stack
