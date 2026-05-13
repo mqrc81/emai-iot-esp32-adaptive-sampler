@@ -69,23 +69,7 @@ other system components — sampling, FFT, filtering, communication, and energy 
 - **PlatformIO** with Arduino framework, board target `heltec_wifi_lora_32_V3`
 - C++11 with FreeRTOS primitives
 
-### 3.2 Libraries
-
-| Library                     | Purpose                               |
-|-----------------------------|---------------------------------------|
-| `ropg/Heltec_ESP32_LoRa_v3` | Board support, SX1262 init, OLED      |
-| `ropg/LoRaWAN_ESP32`        | LoRaWAN OTAA session management       |
-| `jgromes/RadioLib`          | LoRa radio abstraction (bundled)      |
-| `kosme/arduinoFFT`          | FFT computation (`ArduinoFFT<float>`) |
-| `knolleary/PubSubClient`    | MQTT client                           |
-| `adafruit/Adafruit INA219`  | Current/voltage sensor                |
-
-**Design decision:** The `heltec_unofficial` library was chosen over Heltec's official library because it correctly
-handles the SX1262 (vs SX1276 on V2), provides clean RadioLib integration, and avoids pin mapping conflicts that caused
-compilation failures with the official package. `ArduinoFFT<float>` is used instead of `double` because the ESP32-S3 FPU
-is single-precision only — double-precision is software-emulated and significantly slower.
-
-### 3.3 How to Run
+### 3.2 How to Run
 
 **Flash and monitor:**
 
@@ -102,16 +86,24 @@ mosquitto_sub -t "iot/#" -v | while read line; do
 done | tee results/mqtt.txt
 ```
 
-**Generate plots:**
+**Generate plots and print tables:**
 
 ```bash
 cd scripts
-python plot_energy_savings.py ../results/mqtt.txt
-python plot_mean_error.py ../results/mqtt.txt
-# etc.
+python plot_energy_savings.py ../logs/mqtt_10.txt
+python plot_tpr_fpr.py ../logs/mqtt_10.txt
+python print_window_tradeoff.py ../logs/mqtt_10.txt
+python print_adaptive_rates.py ../logs/mqtt_10.txt
+python print_data_volume.py ../logs/mqtt_10.txt
+python plot_current_timeline.py ../logs/mqtt_10.txt
+python plot_mean_error.py ../logs/mqtt_10.txt
+python plot_e2e_latency.py ../logs/mqtt_10.txt
+python print_windowed_average.py ../logs/mqtt_10.txt
+python plot_tpr_vs_w.py ../logs/mqtt_10.txt
+python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 ```
 
-**Configuration** (`src/config.h`, gitignored):
+**Configuration** (Rename `src/config.hpp.example` to `src/config.hpp`):
 
 - WiFi SSID/password
 - MQTT broker IP and port
@@ -131,7 +123,7 @@ python plot_mean_error.py ../results/mqtt.txt
 | `FILTER_WINDOW`        | 21      | Optimal window size per trade-off analysis                           |
 | `ZSCORE_THRESH`        | 3.0     | Standard 3σ threshold (99.7% normal distribution coverage)           |
 | `HAMPEL_THRESH`        | 3.0     | Consistent with Z-score threshold                                    |
-| `BENCHMARK_SAMPLES`    | 10,000  | Sufficient for stable rate measurement (~94ms at hardware max)       |
+| `BENCHMARK_SAMPLES`    | 10\'000 | Sufficient for stable rate measurement (~94ms at hardware max)       |
 | `TRADEOFF_WINDOW_SECS` | 30.0 s  | Provides ~293 samples at adaptive rate, covering W=201 filter window |
 
 ---
@@ -178,37 +170,18 @@ SamplerTask → windowQueue (size 2) → FilterTask
 └─────────────────┘
 ```
 
-**Thread safety mechanisms:**
-
-| Mechanism                            | Protects                                 |
-|--------------------------------------|------------------------------------------|
-| `serialMutex` (FreeRTOS mutex)       | All Serial output via `logMsg`/`logFmt`  |
-| `s_phaseMutex` (FreeRTOS mutex)      | `s_currentPhase` string                  |
-| `std::atomic<bool> s_experimentDone` | Experiment completion flag across cores  |
-| `xQueueOverwrite`                    | Power queue — always latest reading      |
-| Single MQTT publisher                | Only CommTask calls `mqttClient.publish` |
-
-**Design decision:** `volatile` alone is insufficient on the dual-core ESP32-S3 — it prevents compiler optimisation but
-does not guarantee cache coherence. `std::atomic` and FreeRTOS primitives are used instead.
-
-**Design decision:** `vTaskDelay(pdMS_TO_TICKS(1000.0f / sampleRate))` is inserted between each sample in all collection
-loops to simulate real sensor polling timing and create measurable idle periods for energy comparison.
-
-**Design decision:** `waitForQueueDrain()` is called before each phase transition to ensure all pending results are
-published with the correct phase label before the new phase begins.
-
 ---
 
 ## 6. Experiment Phases
 
-| Phase Label       | Description                                                         |
-|-------------------|---------------------------------------------------------------------|
-| `BENCHMARK`       | Tight loop, 10,000 samples, no delay — measures hardware throughput |
-| `FFT_COLLECT`     | 2048 samples at 1000Hz → FFTTask → adaptive rate derived            |
-| `SIG0/1/2_FFT`    | Per-signal FFT to derive signal-specific adaptive rate              |
-| `SIG0/1/2_WINDOW` | 5 windows × 5s at adaptive rate, clean signal, no filter            |
-| `NOISY_p1/p5/p10` | Noisy signal at p=1/5/10%, Z-score and Hampel filtering             |
-| `WINDOW_TRADEOFF` | 30s buffer at adaptive rate, W=5/11/21/51/101/201                   |
+| Phase Label       | Description                                                          |
+|-------------------|----------------------------------------------------------------------|
+| `BENCHMARK`       | Tight loop, 10\'000 samples, no delay — measures hardware throughput |
+| `FFT_COLLECT`     | 2048 samples at 1000Hz → FFTTask → adaptive rate derived             |
+| `SIG0/1/2_FFT`    | Per-signal FFT to derive signal-specific adaptive rate               |
+| `SIG0/1/2_WINDOW` | 5 windows × 5s at adaptive rate, clean signal, no filter             |
+| `NOISY_p1/p5/p10` | Noisy signal at p=1/5/10%, Z-score and Hampel filtering              |
+| `WINDOW_TRADEOFF` | 30s buffer at adaptive rate, W=5/11/21/51/101/201                    |
 
 ---
 
@@ -224,14 +197,14 @@ Three input signals are used:
 | Signal 2 (low freq)  | `4sin(2π·2t)`                 | 2 Hz               |
 | Signal 3 (high freq) | `2sin(2π·10t) + 3sin(2π·45t)` | 45 Hz              |
 
-`TODO: insert signal_noisy.png here — shows clean vs noisy Signal 1 with anomaly spikes`
+![signal_noisy.png](plots/signal_noisy.png)
 
 ### 7.2 Maximum Sampling Frequency
 
-The benchmark phase runs 10,000 signal generation calls in a tight loop with no delays, measuring hardware throughput
+The benchmark phase runs 10'000 signal generation calls in a tight loop with no delays, measuring hardware throughput
 via `esp_timer_get_time()`.
 
-**Result: 106,091 Hz** — real ESP32-S3 hardware measurement.
+**Result: 106'091 Hz** — real ESP32-S3 hardware measurement.
 
 **Note:** The practical FreeRTOS task-driven maximum rate is 1000Hz, limited by `configTICK_RATE_HZ=1000`. The benchmark
 demonstrates hardware capability; 1000Hz is the operational ceiling for task-scheduled sampling.
@@ -249,8 +222,6 @@ criterion).
 | Signal 1 | 4.88 Hz           | 9.77 Hz       | **102.4×**       |
 | Signal 2 | 1.95 Hz           | 3.91 Hz       | **256.0×**       |
 | Signal 3 | 44.92 Hz          | 89.84 Hz      | **11.1×**        |
-
-`TODO: insert plot4_adaptive_rates.png here`
 
 The 4.88Hz reading for Signal 1 (true dominant: 5Hz) reflects FFT bin quantization at 0.488Hz/bin resolution — the
 nearest bin below 5Hz.
@@ -318,7 +289,7 @@ duration limited the total count.
 
 ### 7.7 Energy Savings
 
-`TODO: insert energy_savings.png here`
+![energy_savings.png](plots/energy_savings.png)
 
 **Results:**
 
@@ -329,7 +300,7 @@ duration limited the total count.
 | Signal 2 (3.91 Hz)   | 414 mW     | **13.3%**              |
 | Signal 3 (89.84 Hz)  | 363 mW     | **24.0%**              |
 
-`TODO: insert current_timeline.png here`
+![current_timeline.png](plots/current_timeline.png)
 
 The current timeline reveals two notable phenomena:
 
@@ -358,11 +329,11 @@ Compute times are measured via `esp_timer_get_time()` in FilterTask:
 
 | Signal              | Adaptive (B) | Oversampled (B) | Reduction  |
 |---------------------|--------------|-----------------|------------|
-| Signal 1 (9.77 Hz)  | 192          | 20,000          | **104.2×** |
-| Signal 2 (3.91 Hz)  | 76           | 20,000          | **263.2×** |
-| Signal 3 (89.84 Hz) | 1,796        | 20,000          | **11.1×**  |
+| Signal 1 (9.77 Hz)  | 192          | 20'000          | **104.2×** |
+| Signal 2 (3.91 Hz)  | 76           | 20'000          | **263.2×** |
+| Signal 3 (89.84 Hz) | 1\'796       | 20'000          | **11.1×**  |
 
-Oversampled baseline = 1000Hz × 5s × 4 bytes = 20,000 bytes per window.
+Oversampled baseline = 1000Hz × 5s × 4 bytes = 20'000 bytes per window.
 
 ### 7.10 End-to-End Latency
 
@@ -423,7 +394,7 @@ window variance — the standard deviation of a 21-sample window spanning a full
 spike magnitudes of ±U(5,15) only marginally exceed the 3σ threshold when the window mean is itself shifted by the
 sinusoid. Hampel's median-based approach is more robust to this.
 
-`TODO: insert mean_error.png here`
+![mean_error.png](plots/mean_error.png)
 
 Mean error increases monotonically with injection rate for both filters. **Hampel consistently outperforms Z-score on
 MAE** at p=5% and p=10%, with the crossover clearly visible in the line chart. At p=1% Z-score has slightly lower MAE
@@ -447,7 +418,7 @@ impact in this scenario.
 
 A 30-second buffer (~293 samples at 9.77Hz) is used at p=5% to support all window sizes including W=201.
 
-`TODO: insert tpr_vs_w.png here`
+![tpr_vs_w.png](plots/tpr_vs_w.png)
 
 | W   | Z time (ms) | H time (ms) | Z TPR | H TPR | Z FPR | H FPR | Mem (B) |
 |-----|-------------|-------------|-------|-------|-------|-------|---------|
