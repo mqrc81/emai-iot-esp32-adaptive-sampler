@@ -50,10 +50,10 @@ INA219 SCL      → GPIO18
 
 **Design decision:** An initial approach used a 330Ω resistor between VIN+ and VIN−, which only measured a fixed
 resistor load (~10mA) regardless of CPU activity. This was replaced with the cut-cable inline approach, which measures
-total board current including CPU, WiFi, and LoRa radio — yielding meaningful energy comparisons between phases.
+total board current including CPU, WiFi, and LoRa radio.
 
-The Heltec is flashed via a separate USB-C cable (laptop), then powered exclusively through the INA219 measurement path
-for experiment runs.
+The Heltec is flashed via a separate USB-C cable (laptop), then powered exclusively through the INA219 measurement
+path (wall charger → cut cable → INA219 → Heltec 5V pin) for experiment runs.
 
 ### 2.3 Signal Source
 
@@ -86,7 +86,7 @@ mosquitto_sub -t "iot/#" -v | while read line; do
 done | tee results/mqtt.txt
 ```
 
-**Generate plots and print tables:**
+**Generate plots and tables:**
 
 ```bash
 cd scripts
@@ -108,7 +108,7 @@ python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 - WiFi SSID/password
 - MQTT broker IP and port
 - TTN DevEUI, JoinEUI, AppKey
-- Experiment parameters (see Section 4)
+- Experiment parameters
 
 ---
 
@@ -136,15 +136,14 @@ python plot_signal_noisy.py ../logs/signal_timeseries_4.csv
 │                 │  Drives full experiment sequentially
 │                 │  Generates signal, collects windows
 └────────┬────────┘
-         │ sampleQueue (size 1) — float buffer
+         │ sampleQueue (size 1) — 2048-sample float buffer
          ▼
 ┌─────────────────┐
 │  FFTTask        │  Priority 2 — 24KB stack
 │                 │  Computes FFT, derives adaptive rate
 │                 │  Heap-allocates FFT buffers (malloc)
 └────────┬────────┘
-         │ rateQueue (size 1) — float (adaptive rate)
-         ▼ (back to SamplerTask)
+         │ rateQueue (size 1) — float (adaptive rate back to SamplerTask)
 
 SamplerTask → windowQueue (size 2) → FilterTask
          ↓
@@ -160,7 +159,7 @@ SamplerTask → windowQueue (size 2) → FilterTask
 │  CommTask       │  Priority 1 — 8KB stack
 │                 │  MQTT publish over WiFi
 │                 │  LoRaWAN uplink via SX1262 → TTN
-│                 │  MQTT keepalive every iteration
+│                 │  MQTT keepalive every 5s regardless of queue activity
 └─────────────────┘
 
 ┌─────────────────┐
@@ -217,21 +216,21 @@ criterion).
 
 **Results:**
 
-| Signal   | FFT Dominant Freq | Adaptive Rate | Reduction Factor |
-|----------|-------------------|---------------|------------------|
-| Signal 1 | 4.88 Hz           | 9.77 Hz       | **102.4×**       |
-| Signal 2 | 1.95 Hz           | 3.91 Hz       | **256.0×**       |
-| Signal 3 | 44.92 Hz          | 89.84 Hz      | **11.1×**        |
+| Signal   | FFT Dominant Freq | Adaptive Rate | Reduction Factor | Samples/5s |
+|----------|-------------------|---------------|------------------|------------|
+| Signal 1 | 4.88 Hz           | 9.77 Hz       | **102.4×**       | 48         |
+| Signal 2 | 1.95 Hz           | 3.91 Hz       | **256.0×**       | 19         |
+| Signal 3 | 44.92 Hz          | 89.84 Hz      | **11.1×**        | 449        |
 
-The 4.88Hz reading for Signal 1 (true dominant: 5Hz) reflects FFT bin quantization at 0.488Hz/bin resolution — the
-nearest bin below 5Hz.
+The 4.88Hz reading for Signal 1 (true dominant: 5Hz) reflects FFT bin quantization at 0.488Hz/bin resolution (the
+nearest bin below 5Hz).
 
 ### 7.4 Windowed Average
 
 The windowed average is computed over 5-second windows at the adaptive rate. FilterTask sums all samples (including edge
 samples outside the filter half-window) and divides by total count.
 
-**Results — clean signal averages are perfectly stable:**
+**Clean signal averages — perfectly stable (Std=0.0000):**
 
 | Signal                    | W0     | W1     | W2     | W3     | W4     | Mean       | Std    |
 |---------------------------|--------|--------|--------|--------|--------|------------|--------|
@@ -246,16 +245,13 @@ Std=0.0000 confirms deterministic signal generation and consistent sampling at t
 ### 7.5 MQTT over WiFi to Edge Server
 
 The ESP32-S3 connects to a WiFi network (iPhone hotspot) and publishes JSON payloads to a local Mosquitto broker on the
-same network via PubSubClient. All MQTT publishing is routed exclusively through CommTask to avoid thread-safety issues.
+same network. All MQTT publishing is routed exclusively through CommTask.
 
 Each payload includes: phase, window index, average, adaptive rate, sample count, compute time, NTP timestamp,
 signal/filter/anomaly metadata, INA219 power readings.
 
-MQTT keepalive is maintained by calling `mqttLoop()` every CommTask iteration regardless of queue activity (5-second
-timeout prevents blocking).
-
 **E2E latency** is measured by embedding a NTP-synced Unix timestamp (`gettimeofday()`) in each payload, compared
-against the Mac-side receipt timestamp (Python `time.time()` × 1e6).
+against the Mac-side receipt timestamp.
 
 ![e2e_latency.png](/plots/e2e_latency.png)
 
@@ -280,11 +276,11 @@ minimum 60-second interval between uplinks is enforced for EU868 duty cycle comp
 Uplinks are sent from CommTask for the last window of each phase where `signalIndex ≥ 0` — giving up to 9 uplinks per
 experiment.
 
-`TODO: insert ttn_screenshot_1.png and ttn_screenshot_2.png here`
+![ttn_screenshot.png](plots/ttn_screenshot.png)
 
-**TTN confirmed 3 uplinks received** at the university library location (TTN gateway coverage confirmed via
-ttnmapper.org). Payload decoded correctly: `{ analog_in_1: 0.09 }` and `{ analog_in_1: 0 }`. RSSI: −115 to −119 dBm,
-SNR: −1.25 to −4.5 dB at SF9BW125. 4 of 9 expected uplinks transmitted — the 60-second minimum interval and experiment
+**TTN confirmed 4 uplinks received** at the university library location. Payload decoded correctly:
+`{ analog_in_1: 0.09 }` and `{ analog_in_1: 0 }`. RSSI: −115 to −119 dBm, SNR: −1.25 to −4.5 dB at SF9BW125. 4 of 9
+expected uplinks transmitted — the 60-second minimum interval and experiment
 duration limited the total count.
 
 ### 7.7 Energy Savings
@@ -293,25 +289,33 @@ duration limited the total count.
 
 **Results:**
 
-| Phase                | Avg Power  | Reduction vs Benchmark |
-|----------------------|------------|------------------------|
-| Benchmark (~106 kHz) | **478 mW** | —                      |
-| Signal 1 (9.77 Hz)   | 355 mW     | **25.7%**              |
-| Signal 2 (3.91 Hz)   | 414 mW     | **13.3%**              |
-| Signal 3 (89.84 Hz)  | 363 mW     | **24.0%**              |
+| Phase                            | Avg Power  | Reduction vs Benchmark |
+|----------------------------------|------------|------------------------|
+| Benchmark (~106 kHz, tight loop) | **478 mW** | —                      |
+| Signal 1 (9.77 Hz)               | **355 mW** | **25.7%**              |
+| Signal 2 (3.91 Hz)               | **414 mW** | **13.3%**              |
+| Signal 3 (89.84 Hz)              | **363 mW** | **24.0%**              |
+| NOISY_p1                         | **365 mW** | 23.6%                  |
+| NOISY_p5                         | **357 mW** | 25.3%                  |
+| NOISY_p10                        | **355 mW** | 25.7%                  |
+| WINDOW_TRADEOFF                  | **477 mW** | **~0%**                |
 
 ![current_timeline.png](plots/current_timeline.png)
 
-The current timeline reveals two notable phenomena:
+Three notable observations from the current timeline:
 
-- **WiFi transmission spikes** (~130mA) visible during NOISY phases where MQTT publishes coincide with INA219 reads
-- **Hampel compute spikes** at W=51/101/201 — longer filter computation keeps CPU active, measurably increasing current
-  draw
+**WiFi transmission spike:** A 125mA spike during SIG1_WINDOW confirms WiFi transmission adds ~50mA above the idle
+baseline (~70mA).
 
-**Design note:** Signal 2 (3.91Hz) shows less savings than Signal 1 (9.77Hz) despite a lower adaptive rate. This is
-because at 3.91Hz the `vTaskDelay` between samples (~256ms) is long enough for the WiFi stack to perform background
-maintenance, slightly increasing average current. This illustrates the assignment's note that *"in some cases, the
-optimized sampling frequency cannot be employed due to the latencies of sleeping policies."*
+**WINDOW_TRADEOFF at benchmark-level power (477mW):** The trade-off phase runs all filter computations back-to-back
+without delays between window sizes. CPU near-full utilisation during Hampel computation (up to 51ms) brings average
+power to benchmark levels — directly demonstrating that filter computation energy is comparable to oversampled
+collection energy for large W.
+
+**Signal 2 anomaly:** Signal 2 (3.91Hz) shows higher power than Signal 1 (9.77Hz) despite a lower adaptive rate. At
+3.91Hz, `vTaskDelay` between samples is ~256ms — long enough for WiFi background stack maintenance. This is likely
+because *"in some cases, the optimized sampling frequency cannot be employed due to the latencies of sleeping
+policies."*
 
 ### 7.8 Per-Window Execution Time
 
@@ -324,6 +328,7 @@ Compute times are measured via `esp_timer_get_time()` in FilterTask:
 | Signal 3 (no filter, 449 samples) | 8.75ms       |
 | Z-score (W=21, 28 evaluated)      | ~7ms         |
 | Hampel (W=21, 28 evaluated)       | ~15ms        |
+| Hampel (W=201, 92 evaluated)      | ~51 ms       |
 
 ### 7.9 Data Volume
 
@@ -351,7 +356,7 @@ Three signals with different frequency content demonstrate how dominant frequenc
 - **Signal 3** (dominant 45Hz → 89.84Hz adaptive): 11.1× reduction, 449 samples/window
 
 Higher dominant frequencies require higher adaptive rates, reducing energy savings. Signal 2 achieves the highest
-reduction (256×) but its very low sample count (19 per window) limits statistical confidence in the windowed average.
+reduction (256×), albeit with a very low sample count (19 per window).
 
 ---
 
@@ -452,8 +457,7 @@ and the main experiment configuration.
 |--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Mathematical signal generation | ESP32-S3 has no DAC; no function generator available. All processing components run on real hardware.                                                      |
 | Benchmark vs operational rate  | Benchmark measures hardware throughput at ~106kHz (tight loop). Operational max is 1000Hz, limited by FreeRTOS tick rate. These are distinct measurements. |
-| Per-window TPR statistics      | At 9.77Hz/5s, only ~28 samples filtered per window. Expected anomalies at p=1%: 0.28. Aggregate TPR across all windows is the meaningful metric.           |
+| Per-window TPR statistics      | At 9.77Hz/5s, only ~28 samples evaluated per window. Expected anomalies at p=1%: 0.28. Aggregate TPR across all windows is the meaningful metric.          |
 | FFT bin quantization           | Dominant frequency reports 4.88Hz instead of true 5Hz due to 0.488Hz/bin resolution at FFT_SIZE=2048.                                                      |
 | E2E latency timestamp          | NTP accuracy ~1-10ms over WiFi. macOS `date` does not support `%N` nanoseconds — Python `time.time()×1e6` used for Mac-side timestamps.                    |
-| LoRaWAN coverage               | Only 3 of 9 uplinks transmitted — TTN gateway coverage limited to the university library area. System operates normally without LoRa.                      |
-| INA219 shared I2C bus          | GPIO17/18 shared with OLED (0x3C) and INA219 (0x40) — no conflict since I2C supports multiple devices.                                                     |
+| LoRaWAN coverage               | Only 4 of 9 uplinks transmitted — TTN gateway coverage limited to the university library area. System operates normally without LoRa.                      |
