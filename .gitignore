@@ -13,3 +13,4 @@ simulation/build
 iot-lab-ca.pem
 
 esp32/src/config.hpp
+plots/archive
