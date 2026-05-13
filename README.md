@@ -111,7 +111,7 @@ pio run -t upload && pio device monitor
 
 ```bash
 mosquitto_sub -t "iot/#" -v | while read line; do
-    echo "$(python3 -c 'import time; print(int(time.time()*1e6))') $line"
+    echo "$(gdate +%s%6N) $line"
 done | tee results/mqtt.txt
 ```
 
