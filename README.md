@@ -262,20 +262,11 @@ same network. All MQTT publishing is routed exclusively through CommTask.
 Each payload includes: phase, window index, average, adaptive rate, sample count, compute time, NTP timestamp,
 signal/filter/anomaly metadata, INA219 power readings.
 
-**E2E latency** is measured by embedding a NTP-synced Unix timestamp (`gettimeofday()`) in each payload, compared
-against the Mac-side receipt timestamp.
+Sample MQTT message:
 
-![e2e_latency.png](/plots/e2e_latency.png)
-
-**Results:**
-
-- Mean E2E latency: **927.4ms**
-- Median: **901.2ms**
-- p95: **1055.8ms**
-
-The ~900ms baseline reflects the 5-second window collection time with `vTaskDelay` between samples — the timestamp is
-set at filter completion, not at the start of sampling. True network-only latency is sub-millisecond on a local WiFi
-network.
+```
+1778671981321232 iot/window {"phase":"SIG1_WINDOW","idx":3,"average":0.099742,"adaptive_rate":3.91,"sample_count":19,"compute_ms":0.0110,"timestamp_us":1778671980547332,"signal":1,"filter":0,"anomaly_prob":0.00,"tpr":0.0000,"fpr":0.0000,"mean_err":0.000000,"tp":0,"fp":0,"fn":0,"tn":0,"bytes":76,"current_ma":71.10,"voltage_v":5.104,"power_mw":362.89,"energy_mj":8212.5537}
+```
 
 ### 7.6 LoRaWAN + TTN
 
@@ -354,8 +345,20 @@ Oversampled baseline = 1000Hz × 5s × 4 bytes = 20'000 bytes per window.
 
 ### 7.10 End-to-End Latency
 
-See Section 7.5. Mean E2E latency of 925.8ms is dominated by the window collection time (5s collection period, timestamp
-set at filter completion). Pure network latency on local WiFi is negligible (~1-5ms).
+**E2E latency** is measured by embedding a NTP-synced Unix timestamp (`gettimeofday()`) in each payload, compared
+against the Mac-side receipt timestamp.
+
+![e2e_latency.png](/plots/e2e_latency.png)
+
+**Results:**
+
+- Mean E2E latency: **927.4ms**
+- Median: **901.2ms**
+- p95: **1055.8ms**
+
+The ~900ms baseline reflects the 5-second window collection time with `vTaskDelay` between samples — the timestamp is
+set at filter completion, not at the start of sampling. True network-only latency is sub-millisecond on a local WiFi
+network.
 
 ---
 
