@@ -299,7 +299,7 @@ timeout prevents blocking).
 **E2E latency** is measured by embedding a NTP-synced Unix timestamp (`gettimeofday()`) in each payload, compared
 against the Mac-side receipt timestamp (Python `time.time()` × 1e6).
 
-![e2e_latency.png][/plots/e2e_latency.png]
+![e2e_latency.png](/plots/e2e_latency.png)
 
 **Results:**
 
