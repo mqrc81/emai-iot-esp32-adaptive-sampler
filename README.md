@@ -27,15 +27,7 @@ at 240MHz.
 
 **Heltec WiFi LoRa 32 V3.2** (HTIT-WB32LA)
 
-| Component | Details                                     |
-|-----------|---------------------------------------------|
-| MCU       | ESP32-S3FN8, Xtensa LX7 dual-core @ 240MHz  |
-| RAM       | 512KB SRAM                                  |
-| Flash     | 8MB SiP                                     |
-| WiFi      | 802.11 b/g/n, 2.4GHz                        |
-| LoRa      | Semtech SX1262, EU868                       |
-| Display   | 0.96" 128×64 OLED (SSD1306, I2C, GPIO17/18) |
-| USB       | Type-C, CP2102                              |
+![heltec_board_setup.jpeg](plots/heltec_board_setup.jpeg)
 
 The SX1262 is internally wired on fixed SPI pins: NSS=8, DIO1=14, RST=12, BUSY=13.
 
@@ -67,11 +59,6 @@ for experiment runs.
 
 The ESP32-S3 has no DAC. Signals are generated mathematically in firmware using `SUM(a_k · sin(2π · f_k · t))`. All
 other system components — sampling, FFT, filtering, communication, and energy measurement — execute on real hardware.
-
-### 2.4 LoRaWAN Coverage
-
-LoRaWAN uplinks require a nearby TTN gateway. Testing was conducted at a university library location with confirmed TTN
-gateway coverage. At home and on campus, the system continues operating and gracefully skips LoRa uplinks.
 
 ---
 
