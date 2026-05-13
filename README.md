@@ -27,7 +27,7 @@ at 240MHz.
 
 **Heltec WiFi LoRa 32 V3.2** (HTIT-WB32LA)
 
-![heltec_board_setup.jpeg](plots/heltec_board_setup.jpeg | height=400)
+![heltec_board_setup.jpeg](plots/heltec_board_setup.jpeg)
 
 The SX1262 is internally wired on fixed SPI pins: NSS=8, DIO1=14, RST=12, BUSY=13.
 
