@@ -1,6 +1,18 @@
 # IoT Adaptive Sampling System
 
-## Project Report
+## Table of Contents
+
+1. [System Overview](#1-system-overview)
+2. [Hardware Setup](#2-hardware-setup)
+3. [Software Architecture](#3-software-architecture)
+4. [Experiment Configuration](#4-experiment-configuration)
+5. [FreeRTOS Task Architecture](#5-freertos-task-architecture)
+6. [Experiment Phases](#6-experiment-phases)
+7. [Requirements](#7-requirements)
+8. [Bonus: Three Input Signals](#8-bonus-three-input-signals)
+9. [Bonus: Noisy Signal and Anomaly Detection](#9-bonus-noisy-signal-and-anomaly-detection)
+10. [Limitations and Design Decision](#10-limitations-and-design-decisions)
+11. [LLM Documentation](#11-llm-documentation)
 
 ---
 
