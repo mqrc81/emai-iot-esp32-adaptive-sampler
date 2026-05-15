@@ -475,13 +475,13 @@ and the main experiment configuration.
 | E2E latency timestamp          | NTP accuracy ~1-10ms over WiFi. macOS `date` does not support `%N` nanoseconds — Python `time.time()×1e6` used for Mac-side timestamps.                    |
 | LoRaWAN coverage               | Only 4 of 9 uplinks transmitted — TTN gateway coverage limited to the university library area. System operates normally without LoRa.                      |
 
-## 11. LLM Documentation
+## 9. LLM Documentation
 
 This project was developed with **Claude Sonnet** (Anthropic) as a collaborative
 tool throughout the full development lifecycle — from architecture design through
 firmware implementation, debugging, and post-processing.
 
-### 11.1 Representative Prompt Series
+### 9.1 Representative Prompt Series
 
 **Phase 1 — Simulation setup and architecture:**
 > "Suggested project directory structure."
@@ -535,7 +535,7 @@ firmware implementation, debugging, and post-processing.
 > "For almost all plots you created multiple subplots. Explain concisely
 > for each why all subplots are needed or if any can be removed."
 
-### 11.2 Assessment
+### 9.2 Assessment
 
 **Strengths:**
 
