@@ -474,3 +474,100 @@ and the main experiment configuration.
 | FFT bin quantization           | Dominant frequency reports 4.88Hz instead of true 5Hz due to 0.488Hz/bin resolution at FFT_SIZE=2048.                                                      |
 | E2E latency timestamp          | NTP accuracy ~1-10ms over WiFi. macOS `date` does not support `%N` nanoseconds — Python `time.time()×1e6` used for Mac-side timestamps.                    |
 | LoRaWAN coverage               | Only 4 of 9 uplinks transmitted — TTN gateway coverage limited to the university library area. System operates normally without LoRa.                      |
+
+## 11. LLM Documentation
+
+This project was developed with **Claude Sonnet** (Anthropic) as a collaborative
+tool throughout the full development lifecycle — from architecture design through
+firmware implementation, debugging, and post-processing.
+
+### 11.1 Representative Prompt Series
+
+**Phase 1 — Simulation setup and architecture:**
+> "Suggested project directory structure."
+
+> "Signal generation and CSV export for visual validation."
+
+**Phase 2 — Simulation components:**
+> "Implement the computeFFT using KissFFT."
+
+> "Review and improve the following zscoreFilter implementation."
+
+**Phase 3 — Architecture and hardware decisions:**
+> "Give me a breakdown of how all communication works throughout the experiment
+> and what your suggested approach is, versus the alternatives."
+
+> "What changes need to be made to main.cpp to properly implement a specific phase?"
+
+**Phase 4 — FreeRTOS task design:**
+> "Give me another in-depth summary of the hardware setup, FreeRTOS task
+> architecture, experiment phases, changes from current firmware."
+
+> "Is that different from having computeMedian use a stack-allocated buffer?
+> Which is better for my case?"
+
+**Phase 5 — Implementation, file by file:**
+> "Implement mqtt_client.cpp." / "Fix power.cpp."
+
+> "Feedback: s_accumulatedEnergyMj and s_lastReadUs are shared mutable state.
+> MonitorTask calls powerRead every 100ms but if any other task calls
+> powerResetEnergy you have a race condition. Fix with a mutex."
+> *(followed by corrected implementation)*
+
+**Phase 6 — Debugging and iteration:**
+> "pio run shows this error: [compiler error]. Still the same error.
+> Does this GitHub issue thread help explain the problem?"
+
+> "I noticed a few unused variables: SampleBuffer.signalIndex, sink in
+> samplerTask phase 1. Also, you said millis() is blocking; should it
+> never be used?"
+
+**Phase 7 — Results analysis:**
+> "These are the latest MQTT results. What issues do we still have?
+> I don't think Z-score and Hampel are supposed to not detect anomalies."
+
+> "Does this MQTT data verify the seemingly incorrect chart?"
+
+**Phase 8 — Post-processing and report:**
+> "Rank your previously suggested plots by importance. Give me Python
+> scripts to create plots 1 to 5."
+
+> "For almost all plots you created multiple subplots. Explain concisely
+> for each why all subplots are needed or if any can be removed."
+
+### 11.2 Assessment
+
+**Strengths:**
+
+The LLM dramatically accelerated development in areas where correctness is
+verifiable through compilation and testing. The five-task FreeRTOS architecture
+with queue-based communication was well-reasoned from the first attempt, correctly
+identifying thread-safety concerns (Serial mutex, phase label mutex, atomic
+experiment flag) without prompting. Signal processing logic — FFT, Z-score, and
+Hampel filter — was correct on first generation. Library integration was handled
+well: the LLM correctly identified `heltec_unofficial` as the appropriate choice
+over Heltec's official library and diagnosed the RadioLib pin-remapping conflict
+with the Arduino Nano ESP32 board package. Post-processing scripts (10 plots,
+multiple table formatters) required only minor adjustments.
+
+**Limitations:**
+
+The LLM's most significant weakness was hardware blind spots — it could not verify
+wiring correctness, pin availability, or physical constraints without photos and
+datasheet excerpts provided by the user. This led to repeated corrections: GPIO19/20
+were incorrectly suggested as I2C pins, the INA219 measurement path required several
+iterations before a valid approach was established, and the Ve power rail behavior
+on V3.2 boards was initially missed. Knowledge of rapidly evolving toolchains was
+sometimes outdated — Wokwi CLion plugin serial output routing was never correctly
+resolved in the simulation phase, and IoT-Lab guidance assumed standard M3 node
+behavior incompatible with the Arduino Nano ESP32's native USB serial architecture.
+The LLM also exhibited confident incorrectness on specific details — stating that
+`millis()` was blocking and that `heap_caps_malloc` was necessary for a board with
+no PSRAM — without signalling uncertainty. A LoRaWAN airtime calculation in the
+simulation contained a subtle bug that required user verification to catch. Over a
+very long conversation spanning hundreds of exchanges, earlier architectural decisions
+needed to be periodically re-stated to maintain consistency. These limitations meant
+all suggestions required critical evaluation rather than acceptance at face value —
+the LLM was most effective as an accelerator for an informed developer rather than
+an autonomous code generator, and every result in this report was interpreted and
+verified by the author.
